@@ -14,6 +14,7 @@ import strip9 from '@/assets/strip-9.jpeg';
 import strip10 from '@/assets/strip-10.jpeg';
 import strip11 from '@/assets/strip-11.jpeg';
 import strip12 from '@/assets/strip-12.jpeg';
+import italianBlogPostContent from '@/data/blogPostItalianContent';
 
 export interface BlogPost {
   id: number;
@@ -22,6 +23,7 @@ export interface BlogPost {
   content: string;
   image: string;
   category: string;
+  categoryKey?: string;
   author: string;
   date: string;
   readTime: string;
@@ -1288,3 +1290,128 @@ When booking, look for lodges affiliated with organizations like Ecotourism Keny
 ];
 
 export const categories = ['All', 'Wildlife', 'Travel Tips', 'Destinations', 'Photography', 'Culture', 'Beach', 'Conservation'];
+
+type SupportedLanguage = 'en' | 'de' | 'it';
+
+const blogCategoryLabels: Record<Exclude<SupportedLanguage, 'en'>, Record<string, string>> = {
+  de: {
+    All: 'Alle',
+    Wildlife: 'Wildlife',
+    'Travel Tips': 'Reisetipps',
+    Destinations: 'Reiseziele',
+    Photography: 'Fotografie',
+    Culture: 'Kultur',
+    Beach: 'Strand',
+    Conservation: 'Naturschutz',
+  },
+  it: {
+    All: 'Tutte',
+    Wildlife: 'Fauna selvatica',
+    'Travel Tips': 'Consigli di viaggio',
+    Destinations: 'Destinazioni',
+    Photography: 'Fotografia',
+    Culture: 'Cultura',
+    Beach: 'Mare',
+    Conservation: 'Conservazione',
+  },
+};
+
+const italianBlogTranslations: Record<number, Pick<BlogPost, 'title' | 'excerpt' | 'content'>> = {
+  1: { title: 'La guida definitiva alla Grande Migrazione in Kenya', excerpt: 'Assisti a uno degli spettacoli naturali piu straordinari, mentre milioni di gnu e zebre attraversano il fiume Mara.', content: italianBlogPostContent[1] },
+  2: { title: 'Safari Big Five: guida completa agli animali piu iconici dell Africa', excerpt: 'Tutto quello che devi sapere per avvistare leoni, elefanti, bufali, leopardi e rinoceronti nel loro habitat naturale.', content: italianBlogPostContent[2] },
+  3: { title: 'Safari notturno: alla scoperta della fauna africana dopo il tramonto', excerpt: 'Vivi l emozione di incontrare leopardi, oritteropi e galagoni sotto il cielo stellato africano.', content: italianBlogPostContent[3] },
+  4: { title: 'Birdwatching in Kenya: guida a 1.100 specie', excerpt: 'Dai fenicotteri del Lago Nakuru alle specie rare della foresta di Kakamega, il Kenya e un paradiso per i birdwatcher.', content: italianBlogPostContent[4] },
+  5: { title: 'Fauna marina della costa kenyota', excerpt: 'Scopri delfini, squali balena, tartarughe marine e pesci di barriera colorati nelle acque dell Oceano Indiano.', content: italianBlogPostContent[5] },
+  6: { title: 'Quando visitare la Riserva Nazionale del Maasai Mara', excerpt: 'Stai pianificando il safari? Scopri le stagioni migliori per vedere gli animali, il clima e i livelli di affluenza.', content: italianBlogPostContent[6] },
+  7: { title: 'Cosa mettere in valigia per il tuo safari in Kenya', excerpt: 'Una lista completa di abbigliamento, attrezzatura ed essenziali per vivere il safari in pieno comfort.', content: italianBlogPostContent[7] },
+  8: { title: 'Safari con bambini: guida per un avventura in famiglia', excerpt: 'Consigli e raccomandazioni per organizzare un safari family-friendly che lasci ricordi duraturi a tutte le eta.', content: italianBlogPostContent[8] },
+  9: { title: 'Galateo del safari: cosa fare e cosa evitare nel bush', excerpt: 'Linee guida essenziali per osservare la fauna con rispetto e sicurezza durante il tuo safari africano.', content: italianBlogPostContent[9] },
+  10: { title: 'Come restare in salute durante il safari: guida alla preparazione medica', excerpt: 'Consigli sanitari essenziali, inclusi vaccini, prevenzione della malaria e sicurezza durante il viaggio.', content: italianBlogPostContent[10] },
+  11: { title: 'Alla scoperta di Amboseli: la terra dei giganti', excerpt: 'Casa degli elefanti piu grandi dell Africa e di viste spettacolari sul Kilimangiaro, Amboseli offre esperienze indimenticabili.', content: italianBlogPostContent[11] },
+  12: { title: 'Parco Nazionale del Serengeti: le pianure infinite', excerpt: 'Scopri perche il Serengeti e considerato la destinazione safari africana per eccellenza.', content: italianBlogPostContent[12] },
+  13: { title: 'Cratere di Ngorongoro: il giardino dell Eden africano', excerpt: 'Esplora la piu grande caldera vulcanica intatta del mondo e la sua incredibile concentrazione di fauna.', content: italianBlogPostContent[13] },
+  14: { title: 'Zanzibar: il paradiso dell Isola delle Spezie', excerpt: 'Dalla storica Stone Town alle spiagge incontaminate, Zanzibar e la fuga perfetta dopo il safari.', content: italianBlogPostContent[14] },
+  15: { title: 'Monte Kilimangiaro: scalare il tetto dell Africa', excerpt: 'Tutto quello che devi sapere per affrontare la montagna isolata piu alta del mondo.', content: italianBlogPostContent[15] },
+  16: { title: 'Consigli fotografici per il tuo safari africano', excerpt: 'Cattura momenti naturalistici straordinari con consigli esperti su impostazioni, tempi e composizione.', content: italianBlogPostContent[16] },
+  17: { title: 'Attrezzatura fotografica essenziale per il safari', excerpt: 'Dalle lenti ai treppiedi, una guida completa all equipaggiamento per gli amanti della fauna selvatica.', content: italianBlogPostContent[17] },
+  18: { title: 'Fotografare la migrazione: guida per fotografi', excerpt: 'Consigli specializzati per immortalare i drammatici attraversamenti dei fiumi e i movimenti delle mandrie.', content: italianBlogPostContent[18] },
+  19: { title: 'Fotografia di ritratto nei villaggi africani', excerpt: 'Approcci etici per fotografare le comunita locali e catturare momenti culturali autentici.', content: italianBlogPostContent[19] },
+  20: { title: 'Fotografia notturna in safari', excerpt: 'Tecniche per fotografare il cielo notturno africano, le scene intorno al fuoco e la fauna notturna.', content: italianBlogPostContent[20] },
+  21: { title: 'Capire la cultura e le tradizioni Maasai', excerpt: 'Scopri il ricco patrimonio del popolo Maasai, le sue tradizioni e come interagire con rispetto.', content: italianBlogPostContent[21] },
+  22: { title: 'La costa swahili: dove l Africa incontra l Arabia', excerpt: 'Esplora la fusione culturale unica della costa del Kenya e la sua ricca storia marittima.', content: italianBlogPostContent[22] },
+  23: { title: 'Il popolo Samburu: i guerrieri farfalla', excerpt: 'Scopri le tradizioni uniche del popolo Samburu nel remoto nord del Kenya.', content: italianBlogPostContent[23] },
+  24: { title: 'Musica e danza tradizionali africane', excerpt: 'Dalle danze di salto Maasai al taarab costiero, esplora il ricco patrimonio musicale dell Africa orientale.', content: italianBlogPostContent[24] },
+  25: { title: 'Le cucine tradizionali dell Africa orientale', excerpt: 'Esplora i sapori di Kenya e Tanzania, dai piatti swahili della costa alle specialita degli altopiani.', content: italianBlogPostContent[25] },
+  26: { title: 'La magia di Diani Beach: il paradiso costiero del Kenya', excerpt: 'Sabbie bianche, acque turchesi e attivita senza fine ti aspettano nella principale destinazione balneare del Kenya.', content: italianBlogPostContent[26] },
+  27: { title: 'Sport acquatici sulla costa del Kenya', excerpt: 'Dal kitesurf alle immersioni, scopri le migliori avventure acquatiche lungo la costa kenyota.', content: italianBlogPostContent[27] },
+  28: { title: 'I migliori beach resort in Kenya e Tanzania', excerpt: 'Strutture di lusso fronte mare per il perfetto relax dopo il safari.', content: italianBlogPostContent[28] },
+  29: { title: 'Island hopping nell arcipelago di Lamu', excerpt: 'Esplora il fascino senza tempo della piu autentica destinazione insulare swahili del Kenya.', content: italianBlogPostContent[29] },
+  30: { title: 'Unire safari e mare: l itinerario perfetto', excerpt: 'Come creare la vacanza africana ideale, bilanciando avventure naturalistiche e relax sulla costa.', content: italianBlogPostContent[30] },
+  31: { title: 'Gli sforzi di conservazione nei parchi nazionali del Kenya', excerpt: 'Scopri come il Kenya guida la conservazione della fauna e come il tuo safari aiuta a proteggere le specie minacciate.', content: italianBlogPostContent[31] },
+  32: { title: 'La lotta per salvare i rinoceronti africani', excerpt: 'Capire la crisi del bracconaggio dei rinoceronti e gli sforzi eroici per proteggere questi magnifici animali.', content: italianBlogPostContent[32] },
+  33: { title: 'Conservancies comunitarie: un nuovo modello di conservazione', excerpt: 'Come le comunita locali stanno diventando i piu grandi alleati della conservazione in Africa orientale.', content: italianBlogPostContent[33] },
+  34: { title: 'Conservazione degli elefanti: successi e sfide ancora aperte', excerpt: 'Il notevole recupero delle popolazioni di elefanti e le minacce che ancora affrontano oggi.', content: italianBlogPostContent[34] },
+  35: { title: 'Safari lodge sostenibili: eco-turismo fatto bene', excerpt: 'Come i migliori lodge safari riducono l impatto ambientale massimizzando i benefici per la conservazione.', content: italianBlogPostContent[35] },
+};
+
+const localizeReadTime = (readTime: string, language: SupportedLanguage) => {
+  const minutes = readTime.match(/\d+/)?.[0];
+  if (!minutes || language === 'en') {
+    return readTime;
+  }
+
+  if (language === 'de') {
+    return `${minutes} Min. Lesezeit`;
+  }
+
+  return `${minutes} min di lettura`;
+};
+
+const localizeDate = (date: string, language: SupportedLanguage) => {
+  if (language === 'en') {
+    return date;
+  }
+
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) {
+    return date;
+  }
+
+  const locale = language === 'de' ? 'de-DE' : 'it-IT';
+  return new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(parsed);
+};
+
+export const getLocalizedCategoryLabel = (category: string, language: SupportedLanguage) => {
+  if (language === 'en') {
+    return category;
+  }
+
+  return blogCategoryLabels[language][category] ?? category;
+};
+
+export const getLocalizedCategories = (language: SupportedLanguage) =>
+  categories.map((category) => ({
+    value: category,
+    label: category === 'All' ? getLocalizedCategoryLabel(category, language) : getLocalizedCategoryLabel(category, language),
+  }));
+
+export const getLocalizedBlogPosts = (language: SupportedLanguage): BlogPost[] =>
+  blogPosts.map((post) => {
+    const localizedText = language === 'it' ? italianBlogTranslations[post.id] : undefined;
+
+    return {
+      ...post,
+      ...localizedText,
+      categoryKey: post.category,
+      category: getLocalizedCategoryLabel(post.category, language),
+      readTime: localizeReadTime(post.readTime, language),
+      date: localizeDate(post.date, language),
+    };
+  });
+
+export const getLocalizedBlogPost = (id: number, language: SupportedLanguage) =>
+  getLocalizedBlogPosts(language).find((post) => post.id === id);

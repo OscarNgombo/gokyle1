@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
   darkMode: ["class"],
@@ -62,6 +63,11 @@ export default {
           light: "hsl(var(--earth-light))",
         },
         savanna: "hsl(var(--savanna))",
+        beige: {
+          soft: "hsl(var(--beige-soft))",
+          warm: "hsl(var(--beige-warm))",
+          deep: "hsl(var(--beige-deep))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -104,5 +110,5 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;

@@ -15,6 +15,8 @@ import strip10 from '@/assets/strip-10.jpeg';
 import strip11 from '@/assets/strip-11.jpeg';
 import strip12 from '@/assets/strip-12.jpeg';
 
+type SupportedLanguage = 'en' | 'de' | 'it';
+
 export interface SafariPackage {
   id: number;
   title: string;
@@ -327,26 +329,167 @@ export const safariPackages: SafariPackage[] = [
 
 export const safariTypes = [
   {
+    id: 'excursions',
     title: 'Day Excursions',
     description: 'Half-day and full-day tours exploring local culture, islands, and marine life.',
     image: strip1,
   },
   {
+    id: 'jeep',
     title: 'Jeep Safaris',
     description: 'Classic game drives in 4x4 vehicles through Kenya\'s famous national parks.',
     image: strip2,
   },
   {
+    id: 'fly-in',
     title: 'Fly-in Safaris',
     description: 'Premium experiences to remote destinations including Maasai Mara and Zanzibar.',
     image: strip5,
   },
   {
+    id: 'multi-day',
     title: 'Multi-Day Adventures',
     description: 'Extended safaris with overnight stays at luxury lodges and tented camps.',
     image: strip6,
   },
 ];
+
+type SafariPackageOverride = Pick<SafariPackage, 'title' | 'description' | 'highlights'> & {
+  priceNote?: string;
+};
+
+const safariPackageTranslations: Record<Exclude<SupportedLanguage, 'en'>, Record<number, SafariPackageOverride>> = {
+  de: {
+    1: { title: '1/2 Tag Mombasa Stadttour', description: 'Besuchen Sie die historische Hafenstadt Mombasa mit Elefantenzähnen, Fort Jesus, lokalen Märkten und der Altstadt.', highlights: ['Elefantenzähne', 'Fort Jesus', 'Lokale Märkte', 'Altstadterkundung'] },
+    2: { title: '1/2 Tag Busch Tour', description: 'Erleben Sie das Dorfleben, die Kultur und den Alltag der lokalen Gemeinschaften.', highlights: ['Dorferlebnis', 'Lokale Kultur', 'Alltagsleben', 'Authentische Begegnungen'] },
+    3: { title: '1 Tag Mombasa Stadttour', description: 'Ganztägige Stadttour durch Mombasa inklusive Haller Park und Mittagessen. Entdecken Sie Geschichte und lebendige Kultur.', highlights: ['Stadterkundung', 'Haller Park', 'Mittagessen inklusive', 'Kulturelle Einblicke'] },
+    4: { title: '1 Tag Funzi Island', description: 'Besuchen Sie Mangrovenwälder, Sandbänke im Ozean und halten Sie Ausschau nach Delfinen in dieser traumhaften Inselkulisse.', highlights: ['Mangrovenwälder', 'Sandbänke im Meer', 'Delfinbeobachtung', 'Inselparadies'] },
+    5: { title: '1 Tag Wasini - Kisite Marine Park', description: 'Dhau-Fahrt, Schnorcheln in kristallklarem Wasser und ein köstliches Hummer-Mittagessen auf Wasini Island.', highlights: ['Dhau-Fahrt', 'Schnorcheln', 'Hummer-Mittagessen', 'Meereswelt'] },
+    6: { title: '1 Tag Shimoni - Pilli Pippa', description: 'Traditionelle arabische Dhau-Fahrt mit Schnorcheln im Kisite Marine Park. Ein unvergessliches Meeresabenteuer.', highlights: ['Traditionelle Dhau', 'Kisite Marine Park', 'Schnorcheln', 'Authentisches Erlebnis'] },
+    7: { title: '1 Tag Tsavo East Nationalpark', description: 'Kurze Safari ins Land der berühmten roten Elefanten. Erleben Sie beeindruckende Tierwelt inklusive Mittagessen.', highlights: ['Rote Elefanten', 'Pirschfahrten', 'Mittagessen inklusive', 'Big Five Sichtungen'] },
+    8: { title: '1 Tag Shimba Hills', description: 'Pirschfahrt in den Shimba Hills mit Mittagessen in der Shimba Lodge. Heimat der seltenen Rappenantilope.', highlights: ['Pirschfahrt', 'Mittagessen in der Shimba Lodge', 'Regenwald', 'Rappenantilopen'] },
+    9: { title: '1,5 Tage Tsavo East', description: 'Übernachtung im Zeltcamp Tahri, Voi Wildlife Lodge, Voi Safari Lodge oder Ashnil Aruba Lodge.', highlights: ['Safari mit Übernachtung', 'Lodge-Unterkunft', 'Mehrere Pirschfahrten', 'Sonnenuntergangserlebnis'] },
+    10: { title: '2 Tage Tsavo East - Highlights', description: 'Zweitägige Highlight-Safari mit Übernachtung in ausgewählten Lodges im Tsavo East Nationalpark.', highlights: ['Ausgedehnte Pirschfahrten', 'Wildlife-Fotografie', 'Lodge-Aufenthalt', 'Rote Elefanten'] },
+    11: { title: '2 Tage Tsavo East - Salt Lick', description: 'Aufenthalt in der berühmten Salt Lick Lodge auf Stelzen mit einzigartiger Tierbeobachtung. Inklusive Nachtsafari.', highlights: ['Salt Lick Lodge', 'Erhöhte Tierbeobachtung', 'Nachtsafari', 'Lodge auf Stelzen'], priceNote: '+ Nachtsafari' },
+    12: { title: '2 Tage Tsavo East & West', description: 'Nacht- und Wandersafari in Tsavo West. Zelt- oder Lodge-Unterkunft und zwei sehr unterschiedliche Ökosysteme.', highlights: ['Zwei Nationalparks', 'Nachtsafari', 'Wandersafari', 'Vielfältige Landschaften'] },
+    13: { title: '3 Tage Tsavo East & West / Amboseli', description: 'Kombinationssafari mit Chance auf den Kilimandscharo. Besuchen Sie Tsavo East & West oder Taita Hills & Amboseli.', highlights: ['Kilimandscharo-Blicke', 'Mehrere Parks', 'Lange Tierbeobachtung', 'Premium-Lodges'] },
+    14: { title: '2 Tage Lamu', description: 'Entdecken Sie die Altstadt und das Museum im Norden Kenias. Lamu ist UNESCO-Weltkulturerbe mit reicher Swahili-Kultur.', highlights: ['UNESCO-Weltkulturerbe', 'Altstadterkundung', 'Museumsbesuche', 'Swahili-Kultur'] },
+    15: { title: '2 Tage Sansibar', description: 'Besuchen Sie Sansibar, Gewürzfarmen und lokale Märkte. Erleben Sie die Magie der Gewürzinsel.', highlights: ['Gewürzinsel-Tour', 'Lokale Märkte', 'Stone Town', 'Strandparadies'] },
+    16: { title: '2 Tage Maasai Mara - Fig Tree Camp', description: 'Drei spannende Pirschfahrten in den endlosen Ebenen der Maasai Mara. Aufenthalt im Fig Tree Camp oder Mara Siana Springs.', highlights: ['Drei Pirschfahrten', 'Endlose Ebenen', 'Big Five', 'Fig Tree Camp / Mara Siana Springs'] },
+    17: { title: '2 Tage Maasai Mara - Governors Camp', description: 'Erleben Sie die Wildnis aus "Out of Africa" und die Big Five im renommierten Governors Camp.', highlights: ['Out of Africa Atmosphäre', 'Big Five', 'Luxusunterkunft', 'Unberührte Wildnis'] },
+    18: { title: '2 Tage Amboseli & Maasai Mara', description: 'Zwei ikonische Nationalparks per Flug in zwei Tagen. Erleben Sie Amboseli und die Maasai Mara in einer Reise.', highlights: ['Zwei ikonische Parks', 'Panoramaflüge', 'Kilimandscharo', 'Vielfältige Tierwelt'] },
+    19: { title: '3 Tage Maasai Mara', description: 'Zwei Nächte mitten in der Wildnis. Das ultimative Maasai-Mara-Erlebnis mit intensiven Pirschfahrten.', highlights: ['Zwei Nächte in der Wildnis', 'Mehrere Pirschfahrten', 'Big Five garantiert', 'Sonnenuntergangserlebnisse'] },
+  },
+  it: {
+    1: { title: 'Tour della citta di Mombasa di mezza giornata', description: 'Visita la storica citta portuale di Mombasa, inclusi Elephant Tusks, Fort Jesus, i mercati locali e la citta vecchia.', highlights: ['Elephant Tusks', 'Fort Jesus', 'Mercati locali', 'Esplorazione della citta vecchia'] },
+    2: { title: 'Tour bush di mezza giornata', description: 'Scopri la vita del villaggio, la cultura locale e le attivita quotidiane della comunita.', highlights: ['Esperienza nel villaggio', 'Cultura locale', 'Attivita quotidiane', 'Incontri autentici'] },
+    3: { title: 'Tour della citta di Mombasa di 1 giorno', description: 'Tour completo di Mombasa con visita ad Haller Park e pranzo incluso. Scopri storia e cultura vivace.', highlights: ['Tour completo della citta', 'Visita ad Haller Park', 'Pranzo incluso', 'Immersione culturale'] },
+    4: { title: '1 giorno a Funzi Island', description: 'Visita le foreste di mangrovie, i banchi di sabbia nell\'oceano e goditi l\'avvistamento dei delfini in questo scenario incontaminato.', highlights: ['Foreste di mangrovie', 'Banchi di sabbia in mare', 'Avvistamento delfini', 'Paradiso tropicale'] },
+    5: { title: '1 giorno Wasini - Kisite Marine Park', description: 'Crociera in dhow, snorkeling in acque cristalline e delizioso pranzo con aragosta a Wasini Island.', highlights: ['Crociera in dhow', 'Avventura snorkeling', 'Pranzo con aragosta', 'Fauna marina'] },
+    6: { title: '1 giorno Shimoni - Pilli Pippa', description: 'Tradizionale crociera araba in dhow con snorkeling al Kisite Marine Park. Un\'avventura marina indimenticabile.', highlights: ['Dhow tradizionale', 'Kisite Marine Park', 'Snorkeling', 'Esperienza autentica'] },
+    7: { title: '1 giorno Tsavo East National Park', description: 'Breve safari nella terra dei famosi elefanti rossi. Fauna straordinaria con pranzo incluso.', highlights: ['Famosi elefanti rossi', 'Game drive', 'Pranzo incluso', 'Avvistamento Big Five'] },
+    8: { title: '1 giorno a Shimba Hills', description: 'Game drive nelle Shimba Hills con pranzo allo Shimba Lodge. Habitat della rara antilope sable.', highlights: ['Game drive', 'Pranzo allo Shimba Lodge', 'Esplorazione della foresta pluviale', 'Antilope sable'] },
+    9: { title: '1,5 giorni Tsavo East', description: 'Pernottamento allo Zeltcamp Tahri, Voi Wildlife Lodge, Voi Safari Lodge o Ashnil Aruba Lodge.', highlights: ['Safari con pernottamento', 'Soggiorno in lodge', 'Molteplici game drive', 'Esperienza al tramonto'] },
+    10: { title: '2 giorni Tsavo East - Highlights', description: 'Safari di due giorni con pernottamento in lodge selezionati nel Tsavo East National Park.', highlights: ['Game drive estesi', 'Fotografia naturalistica', 'Soggiorno in lodge', 'Elefanti rossi'] },
+    11: { title: '2 giorni Tsavo East - Salt Lick', description: 'Soggiorna al celebre Salt Lick Lodge, sospeso su palafitte per un avvistamento unico. Include safari notturno.', highlights: ['Salt Lick Lodge', 'Avvistamento rialzato', 'Safari notturno', 'Lodge su palafitte'], priceNote: '+ safari notturno' },
+    12: { title: '2 giorni Tsavo East e West', description: 'Safari notturno e passeggiata nel Tsavo West. Sistemazione in tenda o lodge per esplorare due ecosistemi distinti.', highlights: ['Due parchi nazionali', 'Safari notturno', 'Safari a piedi', 'Paesaggi diversi'] },
+    13: { title: '3 giorni Tsavo East e West / Amboseli', description: 'Safari combinato con possibilita di vedere il Kilimangiaro. Visita Tsavo East e West oppure Taita Hills e Amboseli.', highlights: ['Vista sul Kilimangiaro', 'Piu parchi', 'Osservazione prolungata', 'Lodge premium'] },
+    14: { title: '2 giorni a Lamu', description: 'Esplora la citta vecchia e il museo nel nord del Kenya. Lamu e patrimonio UNESCO con una ricca cultura swahili.', highlights: ['Patrimonio UNESCO', 'Esplorazione della citta vecchia', 'Visite ai musei', 'Cultura swahili'] },
+    15: { title: '2 giorni a Zanzibar', description: 'Visita Zanzibar, le piantagioni di spezie e i mercati locali. Vivi il fascino della Spice Island.', highlights: ['Tour dell\'isola delle spezie', 'Mercati locali', 'Stone Town', 'Paradiso balneare'] },
+    16: { title: '2 giorni Maasai Mara - Fig Tree Camp', description: 'Tre emozionanti game drive nelle pianure infinite della Maasai Mara. Soggiorno al Fig Tree Camp o Mara Siana Springs.', highlights: ['Tre game drive', 'Pianure infinite', 'Big Five', 'Fig Tree Camp / Mara Siana Springs'] },
+    17: { title: '2 giorni Maasai Mara - Governors Camp', description: 'Vivi la natura di "Out of Africa" e i Big Five nel prestigioso Governors Camp.', highlights: ['Atmosfera Out of Africa', 'Big Five', 'Alloggio di lusso', 'Natura incontaminata'] },
+    18: { title: '2 giorni Amboseli e Maasai Mara', description: 'Due parchi iconici raggiunti in volo in due giorni. Scopri sia Amboseli sia la Maasai Mara.', highlights: ['Due parchi iconici', 'Voli panoramici', 'Monte Kilimangiaro', 'Fauna diversificata'] },
+    19: { title: '3 giorni Maasai Mara', description: 'Due notti circondati dai suoni della natura. L\'esperienza definitiva nella Maasai Mara con ampi game drive.', highlights: ['Due notti nella natura', 'Molteplici game drive', 'Big Five garantiti', 'Esperienze al tramonto'] },
+  },
+};
+
+const safariTypeTranslations: Record<Exclude<SupportedLanguage, 'en'>, Record<string, { title: string; description: string }>> = {
+  de: {
+    excursions: { title: 'Tagesausfluege', description: 'Halbtages- und Ganztagestouren mit lokaler Kultur, Inseln und Meereswelt.' },
+    jeep: { title: 'Jeep-Safaris', description: 'Klassische Pirschfahrten im 4x4 durch Kenias bekannteste Nationalparks.' },
+    'fly-in': { title: 'Flugsafaris', description: 'Premium-Erlebnisse zu entlegenen Zielen wie Maasai Mara und Sansibar.' },
+    'multi-day': { title: 'Mehrtaegige Abenteuer', description: 'Laengere Safaris mit Uebernachtungen in Luxuslodges und Zeltcamps.' },
+  },
+  it: {
+    excursions: { title: 'Escursioni giornaliere', description: 'Tour di mezza giornata e di un giorno tra cultura locale, isole e vita marina.' },
+    jeep: { title: 'Safari in jeep', description: 'Classici game drive in 4x4 attraverso i celebri parchi nazionali del Kenya.' },
+    'fly-in': { title: 'Safari fly-in', description: 'Esperienze premium verso destinazioni remote come Maasai Mara e Zanzibar.' },
+    'multi-day': { title: 'Avventure di piu giorni', description: 'Safari estesi con pernottamenti in lodge di lusso e campi tendati.' },
+  },
+};
+
+const translateDuration = (duration: string, language: SupportedLanguage) => {
+  if (language === 'en') {
+    return duration;
+  }
+
+  const replacements =
+    language === 'de'
+      ? [
+          ['Half Day', 'Halber Tag'],
+          ['Days', 'Tage'],
+          ['Day', 'Tag'],
+          ['Nights', 'Naechte'],
+          ['Night', 'Nacht'],
+        ]
+      : [
+          ['Half Day', 'Mezza giornata'],
+          ['Days', 'giorni'],
+          ['Day', 'giorno'],
+          ['Nights', 'notti'],
+          ['Night', 'notte'],
+        ];
+
+  return replacements.reduce((value, [from, to]) => value.split(from).join(to), duration);
+};
+
+const translateGroupSize = (groupSize: string, language: SupportedLanguage) => {
+  if (language === 'en') {
+    return groupSize;
+  }
+
+  return groupSize.replace('People', language === 'de' ? 'Personen' : 'persone');
+};
+
+const localizeSafariPackage = (pkg: SafariPackage, language: SupportedLanguage): SafariPackage => {
+  if (language === 'en') {
+    return pkg;
+  }
+
+  const override = safariPackageTranslations[language][pkg.id];
+
+  return {
+    ...pkg,
+    ...override,
+    duration: translateDuration(pkg.duration, language),
+    groupSize: translateGroupSize(pkg.groupSize, language),
+    priceNote: override?.priceNote ?? pkg.priceNote,
+    highlights: override?.highlights ?? pkg.highlights,
+  };
+};
+
+export const getLocalizedSafariPackages = (language: SupportedLanguage) =>
+  safariPackages.map((pkg) => localizeSafariPackage(pkg, language));
+
+export const findSafariPackage = (query: string | null | undefined, language: SupportedLanguage = 'en') => {
+  if (!query) {
+    return null;
+  }
+
+  const safari = safariPackages.find((pkg) => String(pkg.id) === query || pkg.title === query);
+  return safari ? localizeSafariPackage(safari, language) : null;
+};
+
+export const getLocalizedSafariTypes = (language: SupportedLanguage) => {
+  if (language === 'en') {
+    return safariTypes;
+  }
+
+  return safariTypes.map((type) => ({
+    ...type,
+    ...safariTypeTranslations[language][type.id],
+  }));
+};
 
 export const countries = [
   'Germany',

@@ -1,362 +1,302 @@
-import { motion } from 'framer-motion';
-import { Link, useParams } from 'react-router-dom';
-import { MapPin, ArrowRight } from 'lucide-react';
-import Header from '@/components/Header';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 import PaymentMethods from '@/components/PaymentMethods';
+import StatCard from '@/components/cards/StatCard';
+import LoaderIndicator from '@/components/common/LoaderIndicator';
+import FilterChips from '@/components/common/FilterChips';
+import PageSection from '@/components/layout/PageSection';
+import DestinationRegionSection from '@/components/sections/DestinationRegionSection';
+import PageHero from '@/components/sections/PageHero';
+import SectionHeader from '@/components/sections/SectionHeader';
+import { usePublicDestinationsQuery } from '@/api/queries';
+import { getApiErrorMessage } from '@/api/errors';
 import { useLanguage } from '@/contexts/LanguageContext';
-import hero1 from '@/assets/elephant.jpeg';
-import hero2 from '@/assets/zebra.jpeg';
-import hero3 from '@/assets/antelope.jpeg';
-import hero4 from '@/assets/beach.jpeg';
-import strip1 from '@/assets/strip-1.jpeg';
-import strip2 from '@/assets/strip-2.jpeg';
-import strip3 from '@/assets/strip-3.jpeg';
-import strip4 from '@/assets/strip-4.jpeg';
-import strip5 from '@/assets/strip-5.jpeg';
-import strip6 from '@/assets/strip-6.jpeg';
-import strip7 from '@/assets/strip-7.jpeg';
-import strip8 from '@/assets/strip-8.jpeg';
-import strip9 from '@/assets/strip-9.jpeg';
-import strip10 from '@/assets/strip-10.jpeg';
-import strip11 from '@/assets/strip-11.jpeg';
-import strip12 from '@/assets/strip-12.jpeg';
+import { getContentImage } from '@/lib/contentAssets';
 
-const kenyaDestinations = [
-  { name: 'Masai Mara', image: hero2, descEn: 'Home to the Great Migration and abundant wildlife year-round.', descDe: 'Heimat der Großen Migration und ganzjährig reichhaltiger Tierwelt.' },
-  { name: 'Amboseli', image: strip4, descEn: 'Iconic views of Mount Kilimanjaro with elephant herds.', descDe: 'Ikonische Aussicht auf den Kilimandscharo mit Elefantenherden.' },
-  { name: 'Diani Beach', image: strip11, descEn: 'Pristine white sand beaches and crystal-clear waters.', descDe: 'Unberührte weiße Sandstrände und kristallklares Wasser.' },
-  { name: 'Lake Nakuru', image: strip5, descEn: 'Famous for flamingos and rhino conservation.', descDe: 'Berühmt für Flamingos und Nashornschutz.' },
-  { name: 'Tsavo National Park', image: strip1, descEn: 'One of the oldest and largest parks in Kenya.', descDe: 'Einer der ältesten und größten Parks in Kenia.' },
-  { name: 'Samburu', image: strip7, descEn: 'Remote wilderness home to unique wildlife species.', descDe: 'Abgelegene Wildnis mit einzigartigen Tierarten.' },
-  { name: 'Lake Naivasha', image: strip3, descEn: 'Freshwater lake with hippos and over 400 bird species.', descDe: 'Süßwassersee mit Flusspferden und über 400 Vogelarten.' },
-  { name: 'Lamu Island', image: strip8, descEn: 'UNESCO World Heritage Site with rich Swahili culture.', descDe: 'UNESCO-Weltkulturerbe mit reicher Swahili-Kultur.' },
-  { name: 'Mount Kenya', image: strip2, descEn: "Africa's second-highest peak for adventure seekers.", descDe: 'Afrikas zweithöchster Gipfel für Abenteuerlustige.' },
-  { name: "Hell's Gate", image: strip6, descEn: 'Dramatic landscapes perfect for cycling and hiking.', descDe: 'Dramatische Landschaften ideal zum Radfahren und Wandern.' },
-  { name: 'Watamu', image: strip10, descEn: 'Marine national park with pristine coral reefs.', descDe: 'Meeresnationalpark mit unberührten Korallenriffen.' },
-  { name: 'Mombasa', image: hero3, descEn: 'Historic coastal city with rich cultural heritage.', descDe: 'Historische Küstenstadt mit reichem kulturellen Erbe.' },
-];
-
-const tanzaniaDestinations = [
-  { name: 'Serengeti', image: hero4, descEn: 'Endless plains hosting millions of wildebeest and zebras.', descDe: 'Endlose Ebenen mit Millionen von Gnus und Zebras.' },
-  { name: 'Ngorongoro Crater', image: strip9, descEn: 'A UNESCO World Heritage Site with unique ecosystems.', descDe: 'UNESCO-Weltkulturerbe mit einzigartigen Ökosystemen.' },
-  { name: 'Zanzibar', image: strip10, descEn: 'Spice island paradise with historic Stone Town.', descDe: 'Gewürzinsel-Paradies mit historischer Stone Town.' },
-  { name: 'Mount Kilimanjaro', image: hero3, descEn: "Africa's highest peak and ultimate climbing challenge.", descDe: 'Afrikas höchster Gipfel und ultimative Kletterherausforderung.' },
-  { name: 'Tarangire', image: strip12, descEn: 'Ancient baobabs and large elephant populations.', descDe: 'Uralte Baobabs und große Elefantenpopulationen.' },
-  { name: 'Lake Manyara', image: hero1, descEn: 'Tree-climbing lions and stunning scenery.', descDe: 'Baumkletternde Löwen und atemberaubende Landschaft.' },
-  { name: 'Selous Game Reserve', image: strip1, descEn: 'One of the largest protected areas in Africa.', descDe: 'Eines der größten Schutzgebiete Afrikas.' },
-  { name: 'Ruaha National Park', image: strip7, descEn: 'Remote wilderness with excellent lion sightings.', descDe: 'Abgelegene Wildnis mit ausgezeichneten Löwensichtungen.' },
-  { name: 'Arusha', image: strip2, descEn: 'Gateway city to northern Tanzania safari circuit.', descDe: 'Tor zu Nordtansanias Safari-Route.' },
-  { name: 'Pemba Island', image: strip11, descEn: 'Pristine diving and authentic island culture.', descDe: 'Unberührtes Tauchen und authentische Inselkultur.' },
-  { name: 'Mahale Mountains', image: strip8, descEn: 'Chimpanzee trekking on Lake Tanganyika shores.', descDe: 'Schimpansen-Trekking am Ufer des Tanganjikasees.' },
-  { name: 'Mikumi National Park', image: strip4, descEn: 'Accessible park with diverse wildlife viewing.', descDe: 'Gut erreichbarer Park mit vielfältiger Tierbeobachtung.' },
-];
+type DestinationCountry = 'kenya' | 'tanzania';
+type DestinationExperience = 'all' | 'wildlife' | 'coast' | 'culture' | 'mountains';
 
 const Destinations = () => {
   const { country } = useParams();
   const { t, language } = useLanguage();
-  
-  const showKenya = !country || country === 'kenya';
-  const showTanzania = !country || country === 'tanzania';
-  const isSingleCountry = country === 'kenya' || country === 'tanzania';
+  const navigate = useNavigate();
+  const initialCountry = country === 'kenya' || country === 'tanzania' ? country : 'all';
+  const [activeCountry, setActiveCountry] = useState<'all' | DestinationCountry>(initialCountry);
+  const [activeExperience, setActiveExperience] = useState<DestinationExperience>('all');
+  const { data, isLoading, isError, error } = usePublicDestinationsQuery({ locale: language });
 
-  const heroImage = country === 'tanzania' ? hero4 : hero2;
+  useEffect(() => {
+    setActiveCountry(initialCountry);
+  }, [initialCountry]);
+
+  const destinationCopy =
+    language === 'de'
+      ? {
+          all: 'Alle',
+          allStyles: 'Alle Stile',
+          wildlife: 'Wildlife',
+          coast: 'Kueste & Inseln',
+          culture: 'Kultur & Staedte',
+          mountains: 'Berge & Trails',
+          filterTagline: 'Filtere die Reise',
+          filterTitle: 'Starte mit Kenia und verfeinere dann nach Stil',
+          filterSubtitle: 'Standardmaessig siehst du kenianische Ziele zuerst. Nutze die Filter, um zwischen Laendern und Reisearten zu wechseln.',
+          matchingDestinations: 'passende Reiseziele',
+          noResultsTitle: 'Keine Reiseziele fuer diese Filter gefunden',
+          noResultsDescription: 'Versuche einen anderen Stil oder wechsle das Land, um weitere Reiseziele zu sehen.',
+          visibleDestinations: 'Aktuell sichtbare Reiseziele',
+          kenyaDestinations: 'Ziele in Kenia',
+          tanzaniaDestinations: 'Ziele in Tansania',
+          loading: 'Reiseziele werden geladen...',
+          unavailable: 'Veroeffentlichte Reiseziele sind derzeit nicht verfuegbar.',
+        }
+      : language === 'it'
+        ? {
+            all: 'Tutte',
+            allStyles: 'Tutti gli stili',
+            wildlife: 'Fauna selvatica',
+            coast: 'Costa e isole',
+            culture: 'Cultura e citta',
+            mountains: 'Montagne e trekking',
+            filterTagline: 'Filtra il viaggio',
+            filterTitle: 'Inizia dal Kenya e poi affina per stile',
+            filterSubtitle: 'Per impostazione predefinita mostriamo prima le destinazioni del Kenya. Usa i filtri per cambiare paese e stile di viaggio.',
+            matchingDestinations: 'destinazioni trovate',
+            noResultsTitle: 'Nessuna destinazione corrisponde a questi filtri',
+            noResultsDescription: 'Prova un altro stile o cambia il paese per vedere piu opzioni.',
+            visibleDestinations: 'Destinazioni attualmente visibili',
+            kenyaDestinations: 'Destinazioni in Kenya',
+            tanzaniaDestinations: 'Destinazioni in Tanzania',
+            loading: 'Caricamento delle destinazioni...',
+            unavailable: 'Le destinazioni pubblicate non sono al momento disponibili.',
+          }
+        : {
+            all: 'All',
+            allStyles: 'All Styles',
+            wildlife: 'Wildlife',
+            coast: 'Coast & Islands',
+            culture: 'Culture & Cities',
+            mountains: 'Mountains & Trails',
+            filterTagline: 'Filter the journey',
+            filterTitle: 'Start with Kenya first, then refine by travel style',
+            filterSubtitle: 'By default, Kenyan destinations appear first. Use the filters to switch countries and narrow the destinations by travel style.',
+            matchingDestinations: 'matching destinations',
+            noResultsTitle: 'No destinations match these filters',
+            noResultsDescription: 'Try another style or switch the country filter to see more destination options.',
+            visibleDestinations: 'Destinations currently shown',
+            kenyaDestinations: 'Destinations in Kenya',
+            tanzaniaDestinations: 'Destinations in Tanzania',
+            loading: 'Loading destinations...',
+            unavailable: 'Published destinations are currently unavailable.',
+          };
+
+  const allDestinations = useMemo(() => data?.items ?? [], [data]);
+  const filteredDestinations = useMemo(
+    () =>
+      allDestinations.filter((dest) => {
+        const matchesCountry = activeCountry === 'all' || dest.country === activeCountry;
+        const matchesExperience = activeExperience === 'all' || dest.experienceKeys.includes(activeExperience);
+        return matchesCountry && matchesExperience;
+      }),
+    [activeCountry, activeExperience, allDestinations],
+  );
+
+  const kenyaItems = filteredDestinations
+    .filter((dest) => dest.country === 'kenya')
+    .map((dest) => ({
+      name: dest.name,
+      image: getContentImage(dest.imageKey),
+      description: dest.description,
+      href: `/destinations/${dest.country}/${dest.slug}`,
+    }));
+
+  const tanzaniaItems = filteredDestinations
+    .filter((dest) => dest.country === 'tanzania')
+    .map((dest) => ({
+      name: dest.name,
+      image: getContentImage(dest.imageKey),
+      description: dest.description,
+      href: `/destinations/${dest.country}/${dest.slug}`,
+    }));
+
+  const showKenya = kenyaItems.length > 0;
+  const showTanzania = tanzaniaItems.length > 0;
+
+  const baseForExperienceCounts = activeCountry === 'all'
+    ? allDestinations
+    : allDestinations.filter((dest) => dest.country === activeCountry);
+
+  const countryOptions = [
+    {
+      value: 'all',
+      label: destinationCopy.all,
+      count:
+        activeExperience === 'all'
+          ? allDestinations.length
+          : allDestinations.filter((dest) => dest.experienceKeys.includes(activeExperience)).length,
+    },
+    {
+      value: 'kenya',
+      label: t('nav.kenya'),
+      count:
+        activeExperience === 'all'
+          ? allDestinations.filter((dest) => dest.country === 'kenya').length
+          : allDestinations.filter((dest) => dest.country === 'kenya' && dest.experienceKeys.includes(activeExperience)).length,
+    },
+    {
+      value: 'tanzania',
+      label: t('nav.tanzania'),
+      count:
+        activeExperience === 'all'
+          ? allDestinations.filter((dest) => dest.country === 'tanzania').length
+          : allDestinations.filter((dest) => dest.country === 'tanzania' && dest.experienceKeys.includes(activeExperience)).length,
+    },
+  ] as const;
+
+  const experienceOptions = [
+    {
+      value: 'all',
+      label: destinationCopy.allStyles,
+      count: baseForExperienceCounts.length,
+    },
+    {
+      value: 'wildlife',
+      label: destinationCopy.wildlife,
+      count: baseForExperienceCounts.filter((dest) => dest.experienceKeys.includes('wildlife')).length,
+    },
+    {
+      value: 'coast',
+      label: destinationCopy.coast,
+      count: baseForExperienceCounts.filter((dest) => dest.experienceKeys.includes('coast')).length,
+    },
+    {
+      value: 'culture',
+      label: destinationCopy.culture,
+      count: baseForExperienceCounts.filter((dest) => dest.experienceKeys.includes('culture')).length,
+    },
+    {
+      value: 'mountains',
+      label: destinationCopy.mountains,
+      count: baseForExperienceCounts.filter((dest) => dest.experienceKeys.includes('mountains')).length,
+    },
+  ] as const;
+
+  const heroImage = activeCountry === 'tanzania' ? getContentImage('beach') : getContentImage('zebra');
   const heroTitle = country === 'kenya' ? t('nav.kenya') : country === 'tanzania' ? t('nav.tanzania') : t('dest.heroTitleAll');
-  const heroSubtitle = country === 'kenya' 
+  const heroSubtitle = country === 'kenya'
     ? t('dest.heroSubtitleKenya')
     : country === 'tanzania'
-    ? t('dest.heroSubtitleTanzania')
-    : t('dest.heroSubtitleAll');
-
-  const getDescription = (dest: { descEn: string; descDe: string }) => {
-    return language === 'de' ? dest.descDe : dest.descEn;
-  };
+      ? t('dest.heroSubtitleTanzania')
+      : t('dest.heroSubtitleAll');
 
   return (
     <div className="min-h-screen">
       <Header />
-      
-      {/* Hero Section */}
-      <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${heroImage})` }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
-        <div className="relative z-10 text-center text-white px-6">
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-safari-light font-medium mb-4 tracking-wide uppercase text-sm"
-          >
-            {t('dest.heroTagline')}
-          </motion.p>
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="font-serif text-5xl md:text-7xl mb-6"
-          >
-            {heroTitle}
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-xl text-white/80 max-w-2xl mx-auto"
-          >
-            {heroSubtitle}
-          </motion.p>
-        </div>
-      </section>
+      <PageHero title={heroTitle} tagline={t('dest.heroTagline')} subtitle={heroSubtitle} backgroundImage={heroImage} />
 
-      {/* Country Navigation (when viewing single country) */}
-      {isSingleCountry && (
-        <section className="py-6 bg-secondary/30">
-          <div className="container mx-auto px-6">
-            <div className="flex justify-center gap-4">
-              <Link 
-                to="/destinations/kenya"
-                className={`px-6 py-3 rounded-full font-medium transition-all ${
-                  country === 'kenya' 
-                    ? 'bg-safari text-white' 
-                    : 'bg-card text-muted-foreground hover:bg-safari/10 hover:text-safari'
-                }`}
-              >
-                {t('nav.kenya')}
-              </Link>
-              <Link 
-                to="/destinations/tanzania"
-                className={`px-6 py-3 rounded-full font-medium transition-all ${
-                  country === 'tanzania' 
-                    ? 'bg-safari text-white' 
-                    : 'bg-card text-muted-foreground hover:bg-safari/10 hover:text-safari'
-                }`}
-              >
-                {t('nav.tanzania')}
-              </Link>
-            </div>
+      <main id="main-content">
+        <PageSection backgroundClassName="bg-secondary/30" className="py-12">
+          <SectionHeader
+            tagline={destinationCopy.filterTagline}
+            title={destinationCopy.filterTitle}
+            subtitle={destinationCopy.filterSubtitle}
+            className="mb-10"
+          />
+
+          <div className="space-y-6">
+            <FilterChips
+              options={countryOptions}
+              activeValue={activeCountry}
+              onChange={(value) => {
+                setActiveCountry(value);
+                navigate(value === 'all' ? '/destinations' : `/destinations/${value}`);
+              }}
+            />
+            <FilterChips
+              options={experienceOptions}
+              activeValue={activeExperience}
+              onChange={setActiveExperience}
+            />
           </div>
-        </section>
-      )}
+        </PageSection>
 
-      <main>
-        {/* Kenya Section */}
-        {showKenya && (
-          <section className="py-24 bg-background">
-            <div className="container mx-auto px-6">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="flex items-center justify-between mb-12"
-              >
-                <div>
-                  <p className="text-safari font-medium mb-2 tracking-wide uppercase text-sm">
-                    {t('dest.destinations')}
+        {isLoading ? (
+          <PageSection backgroundClassName="bg-background">
+            <div className="flex min-h-[280px] items-center justify-center gap-4 rounded-3xl border border-border bg-card">
+              <LoaderIndicator label={destinationCopy.loading} />
+              <span className="text-sm text-muted-foreground">{destinationCopy.loading}</span>
+            </div>
+          </PageSection>
+        ) : isError ? (
+          <PageSection backgroundClassName="bg-background">
+            <div className="rounded-3xl border border-destructive/30 bg-destructive/5 p-8 text-sm text-muted-foreground">
+              {getApiErrorMessage(error) || destinationCopy.unavailable}
+            </div>
+          </PageSection>
+        ) : (
+          <>
+            {showKenya && (
+              <DestinationRegionSection
+                title={t('nav.kenya')}
+                tagline={t('dest.destinations')}
+                itemCountLabel={`${kenyaItems.length} ${destinationCopy.matchingDestinations}`}
+                items={kenyaItems}
+                ctaHref={activeCountry === 'all' ? '/destinations/kenya' : undefined}
+                ctaLabel={activeCountry === 'all' ? t('dest.viewAllKenya') : undefined}
+              />
+            )}
+
+            {showTanzania && (
+              <DestinationRegionSection
+                title={t('nav.tanzania')}
+                tagline={t('dest.destinations')}
+                itemCountLabel={`${tanzaniaItems.length} ${destinationCopy.matchingDestinations}`}
+                items={tanzaniaItems}
+                backgroundClassName={showKenya ? 'bg-secondary/30' : 'bg-background'}
+                ctaHref={activeCountry === 'all' ? '/destinations/tanzania' : undefined}
+                ctaLabel={activeCountry === 'all' ? t('dest.viewAllTanzania') : undefined}
+              />
+            )}
+
+            {!showKenya && !showTanzania && (
+              <PageSection backgroundClassName="bg-background">
+                <div className="mx-auto max-w-2xl rounded-3xl border border-border bg-card p-10 text-center">
+                  <h2 className="font-serif text-3xl text-foreground mb-4">
+                    {destinationCopy.noResultsTitle}
+                  </h2>
+                  <p className="text-muted-foreground">
+                    {destinationCopy.noResultsDescription}
                   </p>
-                  <h2 className="font-serif text-4xl md:text-5xl text-foreground">{t('nav.kenya')}</h2>
-                  <p className="text-muted-foreground mt-2">{kenyaDestinations.length} {t('dest.incredibleDestinations')}</p>
                 </div>
-                {!isSingleCountry && (
-                  <Link 
-                    to="/destinations/kenya" 
-                    className="hidden md:flex items-center gap-2 text-safari hover:text-safari-dark transition-colors font-medium"
-                  >
-                    {t('dest.viewAllKenya')}
-                    <ArrowRight size={18} />
-                  </Link>
-                )}
-              </motion.div>
+              </PageSection>
+            )}
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {kenyaDestinations.map((dest, index) => (
-                  <motion.div
-                    key={dest.name}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.05 }}
-                  >
-                    <Link 
-                      to={`/destinations/kenya/${dest.name.toLowerCase().replace(/['\s]/g, '-')}`}
-                      className="group block"
-                    >
-                      <div className="relative overflow-hidden rounded-xl aspect-[3/4] mb-3">
-                        <img 
-                          src={dest.image} 
-                          alt={dest.name}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                        <div className="absolute bottom-4 left-4 right-4">
-                          <div className="flex items-center gap-1 text-safari-light text-xs mb-1">
-                            <MapPin size={12} />
-                            {t('nav.kenya')}
-                          </div>
-                          <h3 className="font-serif text-xl text-white">{dest.name}</h3>
-                        </div>
-                      </div>
-                      <p className="text-muted-foreground text-sm group-hover:text-foreground transition-colors line-clamp-2">
-                        {getDescription(dest)}
-                      </p>
-                    </Link>
-                  </motion.div>
-                ))}
+            <PageSection backgroundClassName={showTanzania && !showKenya ? 'bg-secondary/30' : 'bg-background'}>
+              <SectionHeader
+                tagline={t('dest.planJourney')}
+                title={t('dest.exploreRegion')}
+                subtitle={t('dest.exploreRegionDesc')}
+                className="mb-12"
+              />
+
+              <div className="grid md:grid-cols-3 gap-8">
+                <StatCard value={`${filteredDestinations.length}`} label={destinationCopy.visibleDestinations} />
+                <StatCard
+                  value={`${kenyaItems.length}`}
+                  label={destinationCopy.kenyaDestinations}
+                  delay={0.1}
+                />
+                <StatCard
+                  value={`${tanzaniaItems.length}`}
+                  label={destinationCopy.tanzaniaDestinations}
+                  delay={0.2}
+                />
               </div>
-
-              {!isSingleCountry && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  className="mt-8 text-center md:hidden"
-                >
-                  <Link to="/destinations/kenya" className="btn-safari inline-flex items-center gap-2">
-                    {t('dest.viewAllKenya')}
-                    <ArrowRight size={18} />
-                  </Link>
-                </motion.div>
-              )}
-            </div>
-          </section>
+            </PageSection>
+          </>
         )}
-
-        {/* Tanzania Section */}
-        {showTanzania && (
-          <section className={`py-24 ${showKenya ? 'bg-secondary/30' : 'bg-background'}`}>
-            <div className="container mx-auto px-6">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="flex items-center justify-between mb-12"
-              >
-                <div>
-                  <p className="text-safari font-medium mb-2 tracking-wide uppercase text-sm">
-                    {t('dest.destinations')}
-                  </p>
-                  <h2 className="font-serif text-4xl md:text-5xl text-foreground">{t('nav.tanzania')}</h2>
-                  <p className="text-muted-foreground mt-2">{tanzaniaDestinations.length} {t('dest.incredibleDestinations')}</p>
-                </div>
-                {!isSingleCountry && (
-                  <Link 
-                    to="/destinations/tanzania" 
-                    className="hidden md:flex items-center gap-2 text-safari hover:text-safari-dark transition-colors font-medium"
-                  >
-                    {t('dest.viewAllTanzania')}
-                    <ArrowRight size={18} />
-                  </Link>
-                )}
-              </motion.div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {tanzaniaDestinations.map((dest, index) => (
-                  <motion.div
-                    key={dest.name}
-                    initial={{ opacity: 0, y: 30 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.05 }}
-                  >
-                    <Link 
-                      to={`/destinations/tanzania/${dest.name.toLowerCase().replace(/['\s]/g, '-')}`}
-                      className="group block"
-                    >
-                      <div className="relative overflow-hidden rounded-xl aspect-[3/4] mb-3">
-                        <img 
-                          src={dest.image} 
-                          alt={dest.name}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                        <div className="absolute bottom-4 left-4 right-4">
-                          <div className="flex items-center gap-1 text-safari-light text-xs mb-1">
-                            <MapPin size={12} />
-                            {t('nav.tanzania')}
-                          </div>
-                          <h3 className="font-serif text-xl text-white">{dest.name}</h3>
-                        </div>
-                      </div>
-                      <p className="text-muted-foreground text-sm group-hover:text-foreground transition-colors line-clamp-2">
-                        {getDescription(dest)}
-                      </p>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
-
-              {!isSingleCountry && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  className="mt-8 text-center md:hidden"
-                >
-                  <Link to="/destinations/tanzania" className="btn-safari inline-flex items-center gap-2">
-                    {t('dest.viewAllTanzania')}
-                    <ArrowRight size={18} />
-                  </Link>
-                </motion.div>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* Stats Section */}
-        <section className={`py-24 ${showTanzania && !showKenya ? 'bg-secondary/30' : 'bg-background'}`}>
-          <div className="container mx-auto px-6">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-12"
-            >
-              <p className="text-safari font-medium mb-4 tracking-wide uppercase text-sm">
-                {t('dest.planJourney')}
-              </p>
-              <h2 className="section-title text-foreground mb-6">
-                {t('dest.exploreRegion')}
-              </h2>
-              <p className="section-subtitle mx-auto">
-                {t('dest.exploreRegionDesc')}
-              </p>
-            </motion.div>
-
-            <div className="grid md:grid-cols-3 gap-8 text-center">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="p-8 rounded-2xl bg-card border border-border"
-              >
-                <div className="text-4xl font-serif text-safari mb-2">{kenyaDestinations.length + tanzaniaDestinations.length}+</div>
-                <p className="text-muted-foreground">{t('dest.destinationsInKenya')}</p>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="p-8 rounded-2xl bg-card border border-border"
-              >
-                <div className="text-4xl font-serif text-safari mb-2">50+</div>
-                <p className="text-muted-foreground">{t('dest.nationalParks')}</p>
-              </motion.div>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.2 }}
-                className="p-8 rounded-2xl bg-card border border-border"
-              >
-                <div className="text-4xl font-serif text-safari mb-2">100+</div>
-                <p className="text-muted-foreground">{t('dest.curatedExperiences')}</p>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
       </main>
 
       <PaymentMethods />

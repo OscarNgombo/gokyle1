@@ -1,14 +1,11 @@
 import { motion } from 'framer-motion';
-import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 import PaymentMethods from '@/components/PaymentMethods';
+import PageSection from '@/components/layout/PageSection';
+import PageHero from '@/components/sections/PageHero';
 import { useLanguage } from '@/contexts/LanguageContext';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const FAQ = () => {
   const { t } = useLanguage();
@@ -53,83 +50,53 @@ const FAQ = () => {
   return (
     <div className="min-h-screen">
       <Header />
-      
-      {/* Hero Section */}
-      <section className="relative h-[50vh] min-h-[400px] bg-primary">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="container mx-auto px-6 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <p className="text-safari font-medium mb-4 tracking-wide uppercase text-sm">
-                {t('faq.heroTagline')}
-              </p>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-serif text-primary-foreground mb-6">
-                {t('faq.heroTitle')}
-              </h1>
-              <p className="text-xl text-primary-foreground/70 max-w-2xl mx-auto">
-                {t('faq.heroSubtitle')}
-              </p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        title={t('faq.heroTitle')}
+        tagline={t('faq.heroTagline')}
+        subtitle={t('faq.heroSubtitle')}
+        backgroundClassName="bg-primary"
+        overlayClassName="bg-transparent"
+        heightClassName="h-[50vh] min-h-[400px]"
+      />
 
-      {/* FAQ Content */}
-      <section className="py-24 bg-background">
-        <div className="container mx-auto px-6 max-w-4xl">
-          {faqs.map((category, categoryIndex) => (
-            <motion.div
-              key={categoryIndex}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: categoryIndex * 0.1 }}
-              className="mb-12"
-            >
-              <h2 className="font-serif text-2xl text-foreground mb-6 pb-4 border-b border-border">
-                {category.category}
-              </h2>
-              <Accordion type="single" collapsible className="space-y-4">
-                {category.questions.map((faq, index) => (
-                  <AccordionItem 
-                    key={index} 
-                    value={`${categoryIndex}-${index}`}
-                    className="border border-border rounded-xl px-6 bg-card"
-                  >
-                    <AccordionTrigger className="text-left font-medium hover:text-safari hover:no-underline py-6">
-                      {faq.q}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground pb-6 leading-relaxed">
-                      {faq.a}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </motion.div>
-          ))}
-
-          {/* Still have questions */}
+      <PageSection backgroundClassName="bg-background" containerClassName="max-w-4xl">
+        {faqs.map((category, categoryIndex) => (
           <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            key={category.category}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mt-16 p-12 bg-safari/10 rounded-2xl"
+            transition={{ delay: categoryIndex * 0.1 }}
+            className="mb-12"
           >
-            <h3 className="font-serif text-2xl text-foreground mb-4">
-              {t('faq.stillQuestions')}
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              {t('faq.stillQuestionsDesc')}
-            </p>
-            <a href="/contact" className="btn-safari inline-block">
-              {t('faq.contactUs')}
-            </a>
+            <h2 className="font-serif text-2xl text-foreground mb-6 pb-4 border-b border-border">{category.category}</h2>
+            <Accordion type="single" collapsible className="space-y-4">
+              {category.questions.map((faq, index) => (
+                <AccordionItem
+                  key={`${category.category}-${faq.q}`}
+                  value={`${categoryIndex}-${index}`}
+                  className="border border-border rounded-xl px-6 bg-card"
+                >
+                  <AccordionTrigger className="text-left font-medium hover:text-safari hover:no-underline py-6">
+                    {faq.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pb-6 leading-relaxed">
+                    {faq.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </motion.div>
-        </div>
-      </section>
+        ))}
+
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-16 p-12 bg-safari/10 rounded-2xl">
+          <h3 className="font-serif text-2xl text-foreground mb-4">{t('faq.stillQuestions')}</h3>
+          <p className="text-muted-foreground mb-6">{t('faq.stillQuestionsDesc')}</p>
+          <a href="/contact" className="btn-safari inline-block">
+            {t('faq.contactUs')}
+          </a>
+        </motion.div>
+      </PageSection>
 
       <PaymentMethods />
       <Footer />

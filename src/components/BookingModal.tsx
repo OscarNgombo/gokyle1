@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, MessageCircle, User, Phone, Calendar, Users, Send, Globe, Package, Hotel } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import LoaderIndicator from '@/components/common/LoaderIndicator';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { safariPackages, countries } from '@/data/safariPackages';
+import { countries, findSafariPackage, getLocalizedSafariPackages } from '@/data/safariPackages';
 
 interface PackageDetails {
   title: string;
@@ -25,7 +26,86 @@ interface BookingModalProps {
 
 const BookingModal = ({ isOpen, onClose, packageDetails }: BookingModalProps) => {
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const localizedSafariPackages = useMemo(() => getLocalizedSafariPackages(language), [language]);
+  const bookingCopy =
+    language === 'de'
+      ? {
+          personalDetails: 'Persoenliche Daten',
+          tripDetails: 'Reisedetails',
+          nationality: 'Nationalitaet *',
+          selectNationality: 'Nationalitaet auswaehlen',
+          safariPackage: 'Safari-Paket *',
+          adults: 'Anzahl Erwachsene',
+          children: 'Anzahl Kinder',
+          accommodation: 'Unterkunftswunsch',
+          selectAccommodation: 'Unterkunftsart auswaehlen',
+          specialRequests: 'Besondere Wuensche',
+          fullNamePlaceholder: 'Ihr vollstaendiger Name',
+          adultsPlaceholder: 'z. B. 2',
+          childrenPlaceholder: 'z. B. 0',
+          requestsPlaceholder: 'Besondere Anforderungen, Ernaehrungswuensche, bevorzugte Daten oder weitere Informationen...',
+          openingEmail: 'E-Mail wird geoeffnet...',
+          openingWhatsApp: 'WhatsApp wird geoeffnet...',
+          accommodationOptions: {
+            budget: 'Budget / Camping',
+            'mid-range': 'Mittelklasse-Lodge',
+            luxury: 'Luxus-Lodge / Zeltcamp',
+            premium: 'Premium / 5-Sterne-Resort',
+            flexible: 'Flexibel / Keine Praeferenz',
+          },
+        }
+      : language === 'it'
+        ? {
+            personalDetails: 'Dati personali',
+            tripDetails: 'Dettagli del viaggio',
+            nationality: 'Nazionalita *',
+            selectNationality: 'Seleziona la nazionalita',
+            safariPackage: 'Pacchetto safari *',
+            adults: 'Numero di adulti',
+            children: 'Numero di bambini',
+            accommodation: 'Preferenza di alloggio',
+            selectAccommodation: 'Seleziona il tipo di alloggio',
+            specialRequests: 'Richieste speciali',
+            fullNamePlaceholder: 'Il tuo nome completo',
+            adultsPlaceholder: 'es. 2',
+            childrenPlaceholder: 'es. 0',
+            requestsPlaceholder: 'Esigenze speciali, richieste alimentari, date preferite o informazioni aggiuntive...',
+            openingEmail: 'Apertura email...',
+            openingWhatsApp: 'Apertura WhatsApp...',
+            accommodationOptions: {
+              budget: 'Budget / Campeggio',
+              'mid-range': 'Lodge di fascia media',
+              luxury: 'Lodge di lusso / Campo tendato',
+              premium: 'Premium / Resort 5 stelle',
+              flexible: 'Flessibile / Nessuna preferenza',
+            },
+          }
+        : {
+            personalDetails: 'Personal Details',
+            tripDetails: 'Trip Details',
+            nationality: 'Nationality *',
+            selectNationality: 'Select nationality',
+            safariPackage: 'Safari Package *',
+            adults: 'Number of Adults',
+            children: 'Number of Children',
+            accommodation: 'Accommodation Preference',
+            selectAccommodation: 'Select accommodation type',
+            specialRequests: 'Special Requests',
+            fullNamePlaceholder: 'Your full name',
+            adultsPlaceholder: 'e.g. 2',
+            childrenPlaceholder: 'e.g. 0',
+            requestsPlaceholder: 'Any special requirements, dietary needs, preferred dates, or additional information...',
+            openingEmail: 'Opening Email...',
+            openingWhatsApp: 'Opening WhatsApp...',
+            accommodationOptions: {
+              budget: 'Budget / Camping',
+              'mid-range': 'Mid-Range Lodge',
+              luxury: 'Luxury Lodge / Tented Camp',
+              premium: 'Premium / 5-Star Resort',
+              flexible: 'Flexible / No Preference',
+            },
+          };
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -39,6 +119,19 @@ const BookingModal = ({ isOpen, onClose, packageDetails }: BookingModalProps) =>
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (!packageDetails?.title) {
+      return;
+    }
+
+    const matchedPackage = findSafariPackage(packageDetails.title, language);
+    if (!matchedPackage) {
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, selectedPackage: String(matchedPackage.id) }));
+  }, [language, packageDetails?.title]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -50,23 +143,23 @@ const BookingModal = ({ isOpen, onClose, packageDetails }: BookingModalProps) =>
 
   const validateForm = () => {
     if (!formData.name.trim()) {
-      toast({ title: 'Please enter your name', variant: "destructive" });
+      toast({ title: t('booking.nameRequired'), variant: "destructive" });
       return false;
     }
     if (!formData.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      toast({ title: 'Please enter a valid email', variant: "destructive" });
+      toast({ title: t('booking.emailRequired'), variant: "destructive" });
       return false;
     }
     if (!formData.phone.trim()) {
-      toast({ title: 'Please enter your phone number', variant: "destructive" });
+      toast({ title: t('booking.phoneRequired'), variant: "destructive" });
       return false;
     }
     if (!formData.nationality) {
-      toast({ title: 'Please select your nationality', variant: "destructive" });
+      toast({ title: t('booking.countryRequired'), variant: "destructive" });
       return false;
     }
     if (!formData.selectedPackage && !packageDetails) {
-      toast({ title: 'Please select a package', variant: "destructive" });
+      toast({ title: t('booking.packageRequired'), variant: "destructive" });
       return false;
     }
     return true;
@@ -74,45 +167,35 @@ const BookingModal = ({ isOpen, onClose, packageDetails }: BookingModalProps) =>
 
   const getSelectedPackageDetails = () => {
     if (packageDetails) return packageDetails;
-    const pkg = safariPackages.find(p => p.title === formData.selectedPackage);
-    if (pkg) {
-      return {
-        title: pkg.title,
-        duration: pkg.duration,
-        location: pkg.location,
-        price: pkg.price,
-        highlights: pkg.highlights,
-      };
-    }
-    return null;
+    return findSafariPackage(formData.selectedPackage, language);
   };
 
   const generateBookingMessage = () => {
     const pkgDetails = getSelectedPackageDetails();
     
     return `
-SAFARI BOOKING REQUEST
+${t('booking.bookingRequest')}
 =====================
 
-TRIP DETAILS
+${bookingCopy.tripDetails.toUpperCase()}
 ------------
-Package: ${pkgDetails?.title || formData.selectedPackage}
-Duration: ${pkgDetails?.duration || 'N/A'}
-Location: ${pkgDetails?.location || 'N/A'}
-Price: ${pkgDetails?.price || 'N/A'}
-Adults: ${formData.adults || 'Not specified'}
-Children: ${formData.children || 'None'}
-Accommodation: ${formData.accommodation || 'Not specified'}
+${t('booking.selectSafariPackage')}: ${pkgDetails?.title || formData.selectedPackage}
+${t('booking.duration')}: ${pkgDetails?.duration || 'N/A'}
+${t('booking.location')}: ${pkgDetails?.location || 'N/A'}
+${t('booking.price')}: ${pkgDetails?.price || 'N/A'}
+${bookingCopy.adults}: ${formData.adults || t('booking.notSpecified')}
+${bookingCopy.children}: ${formData.children || '0'}
+${bookingCopy.accommodation}: ${formData.accommodation || t('booking.notSpecified')}
 
-PERSONAL DETAILS
+${t('booking.customerDetails')}
 ----------------
-Name: ${formData.name}
-Email: ${formData.email}
-Phone: ${formData.phone}
-Nationality: ${formData.nationality}
+${t('booking.fullName')}: ${formData.name}
+${t('booking.emailAddress')}: ${formData.email}
+${t('booking.phoneNumber')}: ${formData.phone}
+${bookingCopy.nationality.replace(' *', '')}: ${formData.nationality}
 
-Special Requests:
-${formData.specialRequests || 'None'}
+${t('booking.additionalMessage')}:
+${formData.specialRequests || t('booking.noMessage')}
     `.trim();
   };
 
@@ -121,31 +204,38 @@ ${formData.specialRequests || 'None'}
 
     setIsSubmitting(true);
 
-    const subject = encodeURIComponent(`Safari Booking Request: ${formData.selectedPackage || packageDetails?.title}`);
+    const selectedPackage = getSelectedPackageDetails();
+    const subject = encodeURIComponent(`${t('booking.bookingRequest')}: ${selectedPackage?.title || packageDetails?.title || formData.selectedPackage}`);
     const body = encodeURIComponent(generateBookingMessage());
-    
-    window.location.href = `mailto:gokyletours@gmail.com?subject=${subject}&body=${body}`;
-    
-    toast({
-      title: t('booking.emailOpened'),
-      description: t('booking.emailOpenedDesc'),
-    });
-    
-    setIsSubmitting(false);
-    onClose();
+
+    window.setTimeout(() => {
+      window.location.href = `mailto:gokyletours@gmail.com?subject=${subject}&body=${body}`;
+
+      toast({
+        title: t('booking.emailOpened'),
+        description: t('booking.emailOpenedDesc'),
+      });
+
+      setIsSubmitting(false);
+      onClose();
+    }, 300);
   };
 
   const handleWhatsAppBooking = () => {
     if (!validateForm()) return;
 
+    setIsSubmitting(true);
     const message = encodeURIComponent(generateBookingMessage());
-    window.open(`https://wa.me/254742196613?text=${message}`, '_blank');
-    
-    toast({
-      title: t('booking.whatsappOpened'),
-      description: t('booking.whatsappOpenedDesc'),
-    });
-    onClose();
+    window.setTimeout(() => {
+      window.open(`https://wa.me/254742196613?text=${message}`, '_blank');
+
+      toast({
+        title: t('booking.whatsappOpened'),
+        description: t('booking.whatsappOpenedDesc'),
+      });
+      setIsSubmitting(false);
+      onClose();
+    }, 300);
   };
 
   return (
@@ -188,24 +278,26 @@ ${formData.specialRequests || 'None'}
             <div className="flex-1 overflow-y-auto p-4 md:p-6 min-h-0">
               {/* PERSONAL DETAILS */}
               <div className="mb-8">
-                <h3 className="font-semibold text-foreground mb-4 text-lg flex items-center gap-2">
-                  <User size={18} className="text-safari" />
-                  Personal Details
-                </h3>
+                  <h3 className="font-semibold text-foreground mb-4 text-lg flex items-center gap-2">
+                    <User size={18} className="text-safari" />
+                    {bookingCopy.personalDetails}
+                  </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Full Name *</label>
-                    <Input
-                      name="name"
-                      placeholder="Your full name"
+                      <label htmlFor="booking-modal-name" className="block text-sm font-medium text-foreground mb-1.5">{t('booking.fullName')} *</label>
+                      <Input
+                        id="booking-modal-name"
+                        name="name"
+                        placeholder={bookingCopy.fullNamePlaceholder}
                       value={formData.name}
                       onChange={handleInputChange}
                       maxLength={100}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Email Address *</label>
-                    <Input
+                      <label htmlFor="booking-modal-email" className="block text-sm font-medium text-foreground mb-1.5">{t('booking.emailAddress')} *</label>
+                      <Input
+                        id="booking-modal-email"
                       name="email"
                       type="email"
                       placeholder="your@email.com"
@@ -215,8 +307,9 @@ ${formData.specialRequests || 'None'}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Phone Number *</label>
-                    <Input
+                      <label htmlFor="booking-modal-phone" className="block text-sm font-medium text-foreground mb-1.5">{t('booking.phoneNumber')} *</label>
+                      <Input
+                        id="booking-modal-phone"
                       name="phone"
                       placeholder="+1 234 567 8900"
                       value={formData.phone}
@@ -225,14 +318,14 @@ ${formData.specialRequests || 'None'}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Nationality *</label>
-                    <Select
-                      value={formData.nationality}
-                      onValueChange={(value) => handleSelectChange('nationality', value)}
-                    >
-                      <SelectTrigger className="w-full">
-                        <Globe className="w-4 h-4 mr-2 text-muted-foreground" />
-                        <SelectValue placeholder="Select nationality" />
+                      <label htmlFor="booking-modal-nationality" className="block text-sm font-medium text-foreground mb-1.5">{bookingCopy.nationality}</label>
+                      <Select
+                        value={formData.nationality}
+                        onValueChange={(value) => handleSelectChange('nationality', value)}
+                      >
+                        <SelectTrigger id="booking-modal-nationality" className="w-full" aria-label={bookingCopy.nationality}>
+                          <Globe className="w-4 h-4 mr-2 text-muted-foreground" />
+                          <SelectValue placeholder={bookingCopy.selectNationality} />
                       </SelectTrigger>
                       <SelectContent>
                         {countries.map((country) => (
@@ -248,38 +341,38 @@ ${formData.specialRequests || 'None'}
 
               {/* TRIP DETAILS */}
               <div>
-                <h3 className="font-semibold text-foreground mb-4 text-lg flex items-center gap-2">
-                  <Package size={18} className="text-safari" />
-                  Trip Details
-                </h3>
+                  <h3 className="font-semibold text-foreground mb-4 text-lg flex items-center gap-2">
+                    <Package size={18} className="text-safari" />
+                    {bookingCopy.tripDetails}
+                  </h3>
                 
                 {/* Package Selection */}
                 {!packageDetails && (
                   <div className="mb-4">
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Safari Package *</label>
+                    <label htmlFor="booking-modal-package" className="block text-sm font-medium text-foreground mb-1.5">{bookingCopy.safariPackage}</label>
                     <Select
                       value={formData.selectedPackage}
                       onValueChange={(value) => handleSelectChange('selectedPackage', value)}
                     >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Choose a safari package" />
+                      <SelectTrigger id="booking-modal-package" className="w-full" aria-label={bookingCopy.safariPackage}>
+                        <SelectValue placeholder={t('booking.chooseSafari')} />
                       </SelectTrigger>
                       <SelectContent className="max-h-[300px]">
-                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">Day Excursions</div>
-                        {safariPackages.filter(p => p.category === 'excursion').map((pkg) => (
-                          <SelectItem key={pkg.id} value={pkg.title}>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">{t('safaris.dayExcursions')}</div>
+                        {localizedSafariPackages.filter(p => p.category === 'excursion').map((pkg) => (
+                          <SelectItem key={pkg.id} value={String(pkg.id)}>
                             {pkg.title} - {pkg.price}
                           </SelectItem>
                         ))}
-                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-2">Jeep Safaris</div>
-                        {safariPackages.filter(p => p.category === 'jeep-safari').map((pkg) => (
-                          <SelectItem key={pkg.id} value={pkg.title}>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-2">{t('safaris.jeepSafaris')}</div>
+                        {localizedSafariPackages.filter(p => p.category === 'jeep-safari').map((pkg) => (
+                          <SelectItem key={pkg.id} value={String(pkg.id)}>
                             {pkg.title} - {pkg.price}
                           </SelectItem>
                         ))}
-                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-2">Fly-in Safaris</div>
-                        {safariPackages.filter(p => p.category === 'fly-in-safari').map((pkg) => (
-                          <SelectItem key={pkg.id} value={pkg.title}>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mt-2">{t('safaris.flyInSafaris')}</div>
+                        {localizedSafariPackages.filter(p => p.category === 'fly-in-safari').map((pkg) => (
+                          <SelectItem key={pkg.id} value={String(pkg.id)}>
                             {pkg.title} - {pkg.price}
                           </SelectItem>
                         ))}
@@ -297,24 +390,26 @@ ${formData.specialRequests || 'None'}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Number of Adults</label>
+                    <label htmlFor="booking-modal-adults" className="block text-sm font-medium text-foreground mb-1.5">{bookingCopy.adults}</label>
                     <Input
+                      id="booking-modal-adults"
                       name="adults"
                       type="number"
                       min="1"
-                      placeholder="e.g. 2"
+                      placeholder={bookingCopy.adultsPlaceholder}
                       value={formData.adults}
                       onChange={handleInputChange}
                       maxLength={10}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Number of Children</label>
+                    <label htmlFor="booking-modal-children" className="block text-sm font-medium text-foreground mb-1.5">{bookingCopy.children}</label>
                     <Input
+                      id="booking-modal-children"
                       name="children"
                       type="number"
                       min="0"
-                      placeholder="e.g. 0"
+                      placeholder={bookingCopy.childrenPlaceholder}
                       value={formData.children}
                       onChange={handleInputChange}
                       maxLength={10}
@@ -323,30 +418,31 @@ ${formData.specialRequests || 'None'}
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-foreground mb-1.5">Accommodation Preference</label>
+                  <label htmlFor="booking-modal-accommodation" className="block text-sm font-medium text-foreground mb-1.5">{bookingCopy.accommodation}</label>
                   <Select
                     value={formData.accommodation}
                     onValueChange={(value) => handleSelectChange('accommodation', value)}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger id="booking-modal-accommodation" className="w-full" aria-label={bookingCopy.accommodation}>
                       <Hotel className="w-4 h-4 mr-2 text-muted-foreground" />
-                      <SelectValue placeholder="Select accommodation type" />
+                      <SelectValue placeholder={bookingCopy.selectAccommodation} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="budget">Budget / Camping</SelectItem>
-                      <SelectItem value="mid-range">Mid-Range Lodge</SelectItem>
-                      <SelectItem value="luxury">Luxury Lodge / Tented Camp</SelectItem>
-                      <SelectItem value="premium">Premium / 5-Star Resort</SelectItem>
-                      <SelectItem value="flexible">Flexible / No Preference</SelectItem>
+                      <SelectItem value="budget">{bookingCopy.accommodationOptions.budget}</SelectItem>
+                      <SelectItem value="mid-range">{bookingCopy.accommodationOptions['mid-range']}</SelectItem>
+                      <SelectItem value="luxury">{bookingCopy.accommodationOptions.luxury}</SelectItem>
+                      <SelectItem value="premium">{bookingCopy.accommodationOptions.premium}</SelectItem>
+                      <SelectItem value="flexible">{bookingCopy.accommodationOptions.flexible}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-foreground mb-1.5">Special Requests</label>
+                  <label htmlFor="booking-modal-requests" className="block text-sm font-medium text-foreground mb-1.5">{bookingCopy.specialRequests}</label>
                   <Textarea
+                    id="booking-modal-requests"
                     name="specialRequests"
-                    placeholder="Any special requirements, dietary needs, preferred dates, or additional information..."
+                    placeholder={bookingCopy.requestsPlaceholder}
                     value={formData.specialRequests}
                     onChange={handleInputChange}
                     rows={4}
@@ -365,17 +461,20 @@ ${formData.specialRequests || 'None'}
                 <Button
                   onClick={handleSubmit}
                   disabled={isSubmitting}
+                  aria-busy={isSubmitting}
                   className="flex-1 bg-primary hover:bg-primary/90"
                 >
-                  <Send size={18} />
-                  {t('booking.submitBooking')}
+                  {isSubmitting ? <LoaderIndicator label={bookingCopy.openingEmail} /> : <Send size={18} />}
+                  {isSubmitting ? t('booking.emailOpened') : t('booking.submitBooking')}
                 </Button>
                 <Button
                   onClick={handleWhatsAppBooking}
+                  disabled={isSubmitting}
+                  aria-busy={isSubmitting}
                   className="flex-1 bg-[#25D366] hover:bg-[#128C7E] text-white"
                 >
-                  <MessageCircle size={18} />
-                  {t('booking.bookOnWhatsApp')}
+                  {isSubmitting ? <LoaderIndicator label={bookingCopy.openingWhatsApp} /> : <MessageCircle size={18} />}
+                  {isSubmitting ? t('booking.whatsappOpened') : t('booking.bookOnWhatsApp')}
                 </Button>
               </div>
             </div>
