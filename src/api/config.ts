@@ -1,4 +1,4 @@
-const DEFAULT_API_BASE_URL = 'http://localhost:8000';
+const DEFAULT_API_BASE_URL = 'https://backend-phi-beryl-11.vercel.app/';
 const API_V1_PREFIX = '/api/v1';
 
 const normalizeBaseUrl = (value: string) => value.trim().replace(/\/+$/, '');
