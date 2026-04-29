@@ -23,7 +23,6 @@ const Header = () => {
         { name: t('nav.destinations'), href: '/destinations' },
       ],
     },
-    { name: t('nav.gallery'), href: '/gallery' },
     { name: t('nav.blog'), href: '/blog' },
     { name: t('nav.qa'), href: '/faq' },
     { name: t('nav.contact'), href: '/contact' },
@@ -144,7 +143,7 @@ const Header = () => {
 
             {/* CTA Button */}
             <div className="hidden lg:block">
-              <Link to="/contact" className="btn-safari text-sm">
+              <Link to="/booking" className="btn-safari text-sm">
                 {t('nav.bookNow')}
               </Link>
             </div>
