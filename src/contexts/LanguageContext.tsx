@@ -76,6 +76,7 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Destinations Section
     'destinations.tagline': 'Our Destinations',
+    'dest.matchingDestinations':'Matching Destinations',
     'destinations.title': 'Explore East Africa',
     'destinations.subtitle': 'From the vast savannas of the Masai Mara to the pristine beaches of the Kenyan coast, discover the best destinations Africa has to offer.',
     'destinations.viewAll': 'View All Destinations',
@@ -113,6 +114,7 @@ const translations: Record<Language, Record<string, string>> = {
     'footer.rights': 'All rights reserved.',
     'footer.privacy': 'Privacy Policy',
     'footer.terms': 'Terms of Service',
+    'footer.acceptedPayments': 'Accepted Payment Methods',
     
     // Safaris Page
     'safaris.heroTagline': 'Unforgettable Adventures',
@@ -162,7 +164,8 @@ const translations: Record<Language, Record<string, string>> = {
     'safaris.packagesUnavailableDesc': 'Please refresh the page or contact us directly for assistance.',
     'safaris.noFeaturedPackages': 'Featured safaris will appear here soon.',
     'safaris.noPackagesFound': 'No safari packages match the selected filter right now.',
-    
+    'safaris.whyBookTagline': 'Why Book With Us',
+
     // Category Labels
     'category.excursion': 'Day Excursion',
     'category.jeepSafari': 'Jeep Safari',
@@ -410,7 +413,8 @@ const translations: Record<Language, Record<string, string>> = {
     'services.packagesDesc': 'All-inclusive Urlaubspakete nach Ihren Wünschen.',
     'services.corporate': 'Gruppen & Firmen',
     'services.corporateDesc': 'Spezialisierte Reiselösungen für Gruppen und Firmenkunden.',
-    
+    'safaris.whyBookTagline': 'Warum bei uns buchen',
+
     // Destinations Section
     'destinations.tagline': 'Unsere Reiseziele',
     'destinations.title': 'Ostafrika Erkunden',
@@ -428,6 +432,7 @@ const translations: Record<Language, Record<string, string>> = {
     'destinations.ngorongoroDesc': 'UNESCO-Weltkulturerbe mit einzigartigen Ökosystemen.',
     'destinations.lakeNakuru': 'Nakurusee',
     'destinations.lakeNakuruDesc': 'Berühmt für Flamingos und Nashornschutz.',
+    'dest.matchingDestinations': 'passende Reiseziele',
     
     // Testimonials Section
     'testimonials.tagline': 'Bewertungen',
@@ -450,6 +455,7 @@ const translations: Record<Language, Record<string, string>> = {
     'footer.rights': 'Alle Rechte vorbehalten.',
     'footer.privacy': 'Datenschutz',
     'footer.terms': 'Nutzungsbedingungen',
+    'footer.acceptedPayments': 'Akzeptierte Zahlungsmethoden',
     
     // Safaris Page
     'safaris.heroTagline': 'Unvergessliche Abenteuer',
@@ -683,7 +689,10 @@ const translations: Record<Language, Record<string, string>> = {
     'contact.ourLocation': 'Unser Standort',
     'contact.locationDesc': 'Besuchen Sie uns in unserem Büro in der wunderschönen Küstenstadt Diani Beach, Kenia.',
   },
-  it: {},
+  it: {
+    'dest.matchingDestinations': 'destinazioni trovate',
+    'safaris.whyBookTagline': 'Perché prenotare con noi',
+  },
 };
 
 const italianTranslations: Record<string, string> = {
@@ -716,6 +725,7 @@ const italianTranslations: Record<string, string> = {
   'testimonials.tagline': 'Recensioni',
   'testimonials.title': 'Cosa dicono i nostri ospiti',
   'testimonials.subtitle': 'Non fidarti solo delle nostre parole. Ecco cosa raccontano viaggiatori da tutto il mondo delle loro avventure con noi.',
+  
   'footer.description': 'Il tuo partner di fiducia per safari africani indimenticabili. Vivi Kenya e Tanzania come mai prima.',
   'footer.quickLinks': 'Link rapidi',
   'footer.popularDestinations': 'Destinazioni popolari',
@@ -724,6 +734,8 @@ const italianTranslations: Record<string, string> = {
   'footer.rights': 'Tutti i diritti riservati.',
   'footer.privacy': 'Privacy Policy',
   'footer.terms': 'Termini di servizio',
+  'footer.acceptedPayments': 'Metodi di pagamento accettati',
+
   'safaris.heroTagline': 'Avventure indimenticabili',
   'safaris.heroTitle': 'Pacchetti safari',
   'safaris.heroSubtitle': 'Esperienze safari curate in Kenya e Tanzania',

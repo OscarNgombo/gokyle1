@@ -315,7 +315,6 @@ const Index = () => {
           })
         )}
       </main>
-      <PaymentMethods />
       <Footer />
     </div>
   );
