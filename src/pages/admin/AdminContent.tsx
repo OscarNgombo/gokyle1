@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { getApiErrorMessage } from '@/api/errors';
+import { apiClient } from '@/api/client';
 import {
   adminContentQueryKeys,
   useAdminBlogPostsQuery,
@@ -67,6 +68,47 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 
 const locales: ApiLocale[] = ['en', 'de', 'it'];
+
+const ImageUpload = ({ onUpload, currentUrl }: { onUpload: (key: string, url: string) => void; currentUrl?: string }) => {
+  const { accessToken } = useAuth();
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !accessToken) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const data = await apiClient.post<{ id: string; url: string }>(
+        '/media/upload',
+        formData,
+        {
+          authToken: accessToken,
+          headers: { 'Accept': 'application/json' },
+        }
+      );
+
+      onUpload(data.id, data.url);
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      {currentUrl && <img src={currentUrl} alt="Preview" className="h-32 w-full object-cover rounded-md" />}
+      <Input type="file" accept="image/*" onChange={handleFileChange} disabled={uploading} />
+      {uploading && <p className="text-sm text-muted-foreground">Uploading...</p>}
+    </div>
+  );
+};
+
 const contentTabs = ['safaris', 'blog', 'destinations', 'pages'] as const;
 type ContentTab = (typeof contentTabs)[number];
 
@@ -978,15 +1020,12 @@ const SafariPackageManager = ({
               </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Image key</label>
-                <Input value={form.imageKey} onChange={(event) => setForm({ ...form, imageKey: event.target.value })} />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Image URL</label>
-                <Input value={form.imageUrl} onChange={(event) => setForm({ ...form, imageUrl: event.target.value })} />
-              </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Image</label>
+              <ImageUpload
+                currentUrl={form.imageUrl}
+                onUpload={(key, url) => setForm({ ...form, imageKey: key, imageUrl: url })}
+              />
             </div>
 
             <div className="flex flex-wrap justify-between gap-3 border-t pt-4">
@@ -1254,8 +1293,11 @@ const BlogPostManager = ({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Image key</label>
-                <Input value={form.imageKey} onChange={(event) => setForm({ ...form, imageKey: event.target.value })} />
+                <label className="text-sm font-medium">Image</label>
+                <ImageUpload
+                  currentUrl={form.imageKey ? `/api/v1/media/${form.imageKey}` : undefined}
+                  onUpload={(key) => setForm({ ...form, imageKey: key })}
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Read time (minutes)</label>
@@ -1598,10 +1640,12 @@ const DestinationManager = ({
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Image key</label>
-              <Input value={form.imageKey} onChange={(event) => setForm({ ...form, imageKey: event.target.value })} />
+              <label className="text-sm font-medium">Image</label>
+              <ImageUpload
+                currentUrl={form.imageKey ? `/api/v1/media/${form.imageKey}` : undefined}
+                onUpload={(key) => setForm({ ...form, imageKey: key })}
+              />
             </div>
-
             <LocaleFieldset
               label="Name translations"
               values={form.nameTranslations}

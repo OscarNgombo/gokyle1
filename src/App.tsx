@@ -33,6 +33,8 @@ import AdminDashboardPage from "./pages/admin/AdminDashboard";
 import AdminContentPage from "./pages/admin/AdminContent";
 import AdminInquiriesPage from "./pages/admin/AdminInquiriesPage";
 import AdminLoginPage from "./pages/admin/AdminLogin";
+import { AdminRegisterPage } from "./pages/admin/AdminRegister";
+import { AdminUserManagementPage } from "./pages/admin/AdminUserManagement";
 import AdminOperationsLayout from "./pages/admin/AdminOperationsLayout";
 
 const queryClient = new QueryClient();
@@ -88,6 +90,8 @@ const AppRoutes = () => {
               <Route path="inquiries" element={<AdminInquiriesPage />} />
             </Route>
             <Route path="content" element={<AdminContentPage />} />
+            <Route path="register" element={<AdminRegisterPage />} />
+            <Route path="users" element={<AdminUserManagementPage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Route>
@@ -111,7 +115,7 @@ const App = () => (
         <AuthProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
+          <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
             <AnalyticsTracker />
             <AppRoutes />
           </BrowserRouter>

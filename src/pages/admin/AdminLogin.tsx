@@ -1,6 +1,6 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { LoaderCircle, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, LoaderCircle, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,7 @@ const AdminLoginPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const redirectTo = useMemo(() => {
@@ -114,15 +115,26 @@ const AdminLoginPage = () => {
               <label className="text-sm font-medium text-foreground" htmlFor="password">
                 Password
               </label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
 
             <Button className="w-full" type="submit" disabled={isSubmitting}>

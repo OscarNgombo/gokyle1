@@ -66,17 +66,8 @@ const AdminBookingsPage = () => {
 
   const listQuery = useAdminBookingRequestsQuery(accessToken, filters);
   const items = useMemo(() => listQuery.data?.items ?? [], [listQuery.data?.items]);
-
-  useEffect(() => {
-    if (!items.length) {
-      setSelectedId(null);
-      return;
-    }
-
-    if (!selectedId || !items.some((item) => item.id === selectedId)) {
-      setSelectedId(items[0].id);
-    }
-  }, [items, selectedId]);
+  const statusCounts = useMemo(() => listQuery.data?.statusCounts ?? {}, [listQuery.data?.statusCounts]);
+  const totalBookings = listQuery.data?.total ?? 0;
 
   const detailQuery = useAdminBookingRequestDetailQuery(accessToken, selectedId);
   const detail = detailQuery.data;
@@ -89,11 +80,42 @@ const AdminBookingsPage = () => {
     if (!detail) {
       return;
     }
-
     setDraftStatus(detail.status);
     setDraftAssigneeId(detail.assignedAdmin?.id ?? 'unassigned');
     setDraftNotes(detail.internalNotes ?? '');
   }, [detail]);
+
+  useEffect(() => {
+    if (!items.length) {
+      setSelectedId(null);
+      return;
+    }
+    if (!selectedId || !items.some((item) => item.id === selectedId)) {
+      setSelectedId(items[0].id);
+    }
+  }, [items, selectedId]);
+
+  const assigneeOptions = useMemo(() => {
+    const options = [{ label: 'Unassigned', value: 'unassigned' }];
+    if (detail?.assignedAdmin && detail.assignedAdmin.id !== user?.id) {
+      options.push({
+        label: detail.assignedAdmin.fullName || detail.assignedAdmin.email,
+        value: detail.assignedAdmin.id,
+      });
+    }
+    if (user) {
+      options.push({ label: `Assign to me (${user.fullName || user.email})`, value: user.id });
+    }
+    return options;
+  }, [detail?.assignedAdmin, user]);
+
+  const normalizedNotes = draftNotes.trim();
+  const isDirty = Boolean(
+    detail &&
+      (draftStatus !== detail.status ||
+        draftAssigneeId !== (detail.assignedAdmin?.id ?? 'unassigned') ||
+        normalizedNotes !== (detail.internalNotes ?? '')),
+  );
 
   const updateMutation = useAdminBookingRequestUpdateMutation(accessToken, {
     onSuccess: async (updated) => {
@@ -110,41 +132,12 @@ const AdminBookingsPage = () => {
       toast({
         title: 'Unable to save booking changes',
         description: error.message,
-        variant: 'destructive',
       });
     },
   });
 
-  const assigneeOptions = useMemo(() => {
-    const options = [{ label: 'Unassigned', value: 'unassigned' }];
-
-    if (detail?.assignedAdmin && detail.assignedAdmin.id !== user?.id) {
-      options.push({
-        label: detail.assignedAdmin.fullName || detail.assignedAdmin.email,
-        value: detail.assignedAdmin.id,
-      });
-    }
-
-    if (user) {
-      options.push({ label: `Assign to me (${user.fullName || user.email})`, value: user.id });
-    }
-
-    return options;
-  }, [detail?.assignedAdmin, user]);
-
-  const normalizedNotes = draftNotes.trim();
-  const isDirty = Boolean(
-    detail &&
-      (draftStatus !== detail.status ||
-        draftAssigneeId !== (detail.assignedAdmin?.id ?? 'unassigned') ||
-        normalizedNotes !== (detail.internalNotes ?? '')),
-  );
-
   const handleSave = () => {
-    if (!selectedId) {
-      return;
-    }
-
+    if (!selectedId) return;
     updateMutation.mutate({
       bookingRequestId: selectedId,
       input: {
@@ -157,29 +150,53 @@ const AdminBookingsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {/* Metric Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total matching</CardDescription>
-            <CardTitle>{listQuery.data?.total ?? 0}</CardTitle>
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Requests</CardTitle>
           </CardHeader>
+          <CardContent className="p-4 pt-0 text-2xl font-bold">{totalBookings}</CardContent>
         </Card>
-        {bookingRequestStatusOptions.slice(0, 3).map((statusOption) => (
-          <Card key={statusOption.value}>
-            <CardHeader className="pb-2">
-              <CardDescription>{statusOption.label}</CardDescription>
-              <CardTitle>{listQuery.data?.statusCounts?.[statusOption.value] ?? 0}</CardTitle>
+        {Object.entries(statusCounts).map(([status, count]) => (
+          <Card key={status}>
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground capitalize">{status}</CardTitle>
             </CardHeader>
+            <CardContent className="p-4 pt-0 text-2xl font-bold">{count}</CardContent>
           </Card>
         ))}
       </div>
 
+      {/* Status Chips */}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant={statusFilter === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setStatusFilter('all')}
+          className="rounded-full"
+        >
+          All
+        </Button>
+        {bookingRequestStatusOptions.map((option) => (
+          <Button
+            key={option.value}
+            variant={statusFilter === option.value ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setStatusFilter(option.value as BookingRequestAdminStatus)}
+            className="rounded-full"
+          >
+            {option.label}
+          </Button>
+        ))}
+      </div>
+      
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(360px,0.9fr)]">
         <Card>
           <CardHeader>
             <CardTitle>Booking requests</CardTitle>
             <CardDescription>Search by guest, package, nationality, email, or phone.</CardDescription>
-            <div className="grid gap-3 md:grid-cols-[minmax(0,1.5fr)_200px_200px]">
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1.5fr)_200px]">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -189,19 +206,6 @@ const AdminBookingsPage = () => {
                   onChange={(event) => setSearchInput(event.target.value)}
                 />
               </div>
-              <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as typeof statusFilter)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={allStatusesValue}>All statuses</SelectItem>
-                  {bookingRequestStatusOptions.map((statusOption) => (
-                    <SelectItem key={statusOption.value} value={statusOption.value}>
-                      {statusOption.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
               <Select value={assignedFilter} onValueChange={(value) => setAssignedFilter(value as AdminAssignmentFilter)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Assignment" />
@@ -237,12 +241,10 @@ const AdminBookingsPage = () => {
                   {items.map((item) => {
                     const statusLabel =
                       bookingRequestStatusOptions.find((option) => option.value === item.status)?.label ?? item.status;
-
                     return (
                       <TableRow
                         key={item.id}
                         className={cn('cursor-pointer', selectedId === item.id && 'bg-muted')}
-                        data-state={selectedId === item.id ? 'selected' : undefined}
                         onClick={() => setSelectedId(item.id)}
                       >
                         <TableCell>
@@ -296,39 +298,34 @@ const AdminBookingsPage = () => {
               </div>
             ) : detail ? (
               <div className="space-y-6">
-                <div className="space-y-3 rounded-lg border bg-muted/30 p-4">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <OperationStatusBadge
-                      label={bookingRequestStatusOptions.find((option) => option.value === detail.status)?.label ?? detail.status}
-                      status={detail.status}
-                    />
-                    <span className="text-sm text-muted-foreground">Created {formatAdminDateTime(detail.createdAt)}</span>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">
+                      {detail.customerName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                    </div>
                     <div>
-                      <p className="text-sm font-medium text-foreground">Guest</p>
-                      <p className="text-sm text-muted-foreground">{detail.customerName}</p>
+                      <p className="font-medium text-foreground">{detail.customerName}</p>
                       <p className="text-sm text-muted-foreground">{detail.customerEmail}</p>
-                      <p className="text-sm text-muted-foreground">{detail.customerPhone}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">Trip</p>
-                      <p className="text-sm text-muted-foreground">{detail.packageTitleEn}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {detail.adultsCount ?? '—'} adults · {detail.childrenCount} children
-                      </p>
-                      <p className="text-sm text-muted-foreground">Nationality: {detail.customerNationality}</p>
                     </div>
                   </div>
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    <p>
-                      <span className="font-medium text-foreground">Accommodation:</span>{' '}
-                      {detail.accommodationPreference || 'Not specified'}
-                    </p>
-                    <p>
-                      <span className="font-medium text-foreground">Special requests:</span>{' '}
-                      {detail.specialRequests || 'None shared yet'}
-                    </p>
+                  
+                  <div className="grid grid-cols-2 gap-4 border-t pt-4">
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase">Phone</p>
+                      <p className="text-sm text-foreground">{detail.customerPhone}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase">Nationality</p>
+                      <p className="text-sm text-foreground">{detail.customerNationality}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase">Trip</p>
+                      <p className="text-sm text-foreground">{detail.packageTitleEn}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground uppercase">Group Size</p>
+                      <p className="text-sm text-foreground">{detail.adultsCount} adults · {detail.childrenCount} kids</p>
+                    </div>
                   </div>
                 </div>
 
@@ -377,22 +374,13 @@ const AdminBookingsPage = () => {
 
                 <div className="flex flex-wrap gap-3">
                   <Button disabled={!isDirty || updateMutation.isPending} onClick={handleSave}>
-                    {updateMutation.isPending ? (
-                      <>
-                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      'Save changes'
-                    )}
+                    {updateMutation.isPending ? 'Saving...' : 'Save changes'}
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     disabled={!detail || updateMutation.isPending}
                     onClick={() => {
-                      if (!detail) {
-                        return;
-                      }
+                      if (!detail) return;
                       setDraftStatus(detail.status);
                       setDraftAssigneeId(detail.assignedAdmin?.id ?? 'unassigned');
                       setDraftNotes(detail.internalNotes ?? '');

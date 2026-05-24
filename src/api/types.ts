@@ -19,7 +19,7 @@ export type DestinationExperience = 'wildlife' | 'coast' | 'culture' | 'mountain
 
 export type SafariPackageId = number;
 
-export type AdminUserRole = 'admin';
+export type AdminUserRole = 'super_admin' | 'operations_manager' | 'operations_agent' | 'content_manager' | 'admin';
 export type AdminAssignmentFilter = 'all' | 'me' | 'unassigned';
 export type BookingRequestAdminStatus =
   | 'received'

@@ -53,7 +53,9 @@ export class ApiError extends Error {
 }
 
 const request = async <T>(path: string, { authToken, body, headers, query, ...init }: RequestOptions = {}): Promise<T> => {
-  const hasJsonBody = body !== undefined;
+  const isFormData = body instanceof FormData;
+  const hasJsonBody = body !== undefined && !isFormData;
+
   const response = await fetch(buildUrl(path, query), {
     ...init,
     headers: {
@@ -62,7 +64,7 @@ const request = async <T>(path: string, { authToken, body, headers, query, ...in
       ...(hasJsonBody ? { 'Content-Type': 'application/json' } : {}),
       ...headers,
     },
-    body: hasJsonBody ? JSON.stringify(body) : undefined,
+    body: isFormData ? (body as FormData) : (hasJsonBody ? JSON.stringify(body) : undefined),
   });
 
   const data = await parseResponseBody(response);

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, FileText, FolderCog, ShieldCheck, Wrench } from 'lucide-react';
+import { useMemo } from 'react';
+import { ArrowRight, FileText, ShieldCheck, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/use-auth';
@@ -22,49 +23,68 @@ const adminAreas = [
 const AdminDashboardPage = () => {
   const { user } = useAuth();
 
+  const filteredAdminAreas = useMemo(() => {
+    if (!user) return [];
+
+    return adminAreas.filter((area) => {
+      if (area.title === 'Operations') {
+        return ['super_admin', 'operations_manager', 'operations_agent'].includes(user.role);
+      }
+      if (area.title === 'Content') {
+        return ['super_admin', 'content_manager'].includes(user.role);
+      }
+      return false;
+    });
+  }, [user]);
+
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  }, []);
+
   return (
     <div className="space-y-6">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold tracking-tight">
+          {greeting}, {user?.fullName?.split(' ')[0] || user?.email.split('@')[0] || 'Admin'}!
+        </h1>
+        <p className="text-muted-foreground">Here's what's happening with your workspace today.</p>
+      </div>
+
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(280px,1fr)]">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-2xl">
               <ShieldCheck className="h-6 w-6 text-primary" />
-              Admin workspace
+              Quick Access
             </CardTitle>
             <CardDescription>
-              Auth, protected routing, content tools, and the operations workspace are live for day-to-day staff use.
+              Jump straight into your most frequent tasks.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 text-sm text-muted-foreground">
-            <p>
-              Signed in as <span className="font-medium text-foreground">{user?.fullName || user?.email}</span>.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild>
-                <Link to="/admin/operations/bookings">
-                  Open operations
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+          <CardContent className="flex flex-wrap gap-3">
+            {filteredAdminAreas.map((area) => (
+              <Button key={area.title} variant="outline" asChild>
+                <Link to={area.href}>Open {area.title.toLowerCase()}</Link>
               </Button>
-              <Button variant="outline" asChild>
-                <Link to="/admin/content">Open content</Link>
-              </Button>
-            </div>
+            ))}
           </CardContent>
         </Card>
-
+        
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Access summary</CardTitle>
-            <CardDescription>Phase 1 uses a single admin role.</CardDescription>
+            <CardDescription>Your current authorization level.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-muted-foreground">
             <div className="rounded-md border bg-background px-3 py-2">
               <p className="font-medium text-foreground">Role</p>
-              <p>{user?.role || 'admin'}</p>
+              <p className="capitalize">{user?.role?.replace('_', ' ')}</p>
             </div>
             <div className="rounded-md border bg-background px-3 py-2">
-              <p className="font-medium text-foreground">Status</p>
+              <p className="font-medium text-foreground">Account Status</p>
               <p>{user?.isActive ? 'Active' : 'Inactive'}</p>
             </div>
           </CardContent>
@@ -72,7 +92,7 @@ const AdminDashboardPage = () => {
       </section>
 
       <section className="grid gap-4 md:grid-cols-2">
-        {adminAreas.map(({ description, href, icon: Icon, title }) => (
+        {filteredAdminAreas.map(({ description, href, icon: Icon, title }) => (
           <Card key={title}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -92,18 +112,6 @@ const AdminDashboardPage = () => {
           </Card>
         ))}
       </section>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <FolderCog className="h-5 w-5 text-primary" />
-            Ready for expansion
-          </CardTitle>
-          <CardDescription>
-            The protected <code>/admin</code> shell now supports live operations work and is ready for more tools.
-          </CardDescription>
-        </CardHeader>
-      </Card>
     </div>
   );
 };
