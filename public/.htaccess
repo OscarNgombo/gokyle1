@@ -1,0 +1,10 @@
+RewriteEngine On
+RewriteBase /
+
+# Ensure /api requests are not rewritten to index.html
+RewriteRule ^api(/.*)?$ - [L,NC]
+
+# Redirect all other requests to index.html for SPA routing
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [L]
