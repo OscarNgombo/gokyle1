@@ -8,7 +8,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '@/api/client';
 import { adminMeQueryOptions, authQueryKeys, useAdminMeQuery } from '@/api/queries';
-import { loginAdminUser } from '@/api/services';
+import { loginAdminUser, loginAdminUserWithGoogle, handleGoogleRedirect } from '@/api/services';
 import type { AdminLoginInput } from '@/api/types';
 import { AuthContext, type AuthContextValue } from '@/contexts/auth-context';
 import {
@@ -39,6 +39,24 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     }
   }, [clearSession, meQuery.error]);
 
+  // Handle Google Redirect Result on Mount
+  useEffect(() => {
+    const handleRedirect = async () => {
+      try {
+        const response = await handleGoogleRedirect();
+        if (response) {
+          const nextSession = createStoredAdminAuthSession(response);
+          setStoredAdminAuthSession(nextSession);
+          setSession(nextSession);
+          queryClient.setQueryData(authQueryKeys.me(nextSession.accessToken), response.user);
+        }
+      } catch (err: any) {
+        console.error("Failed to resolve Google redirect", err);
+      }
+    };
+    handleRedirect();
+  }, [queryClient]);
+
   const login = useCallback(
     async (input: AdminLoginInput) => {
       const response = await loginAdminUser(input);
@@ -52,6 +70,18 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     },
     [queryClient],
   );
+
+  const loginWithGoogle = useCallback(
+    async () => {
+      await loginAdminUserWithGoogle();
+      // Since it redirects, it will not return a response in the current window lifecycle.
+      // We return a mock response matching the type signature or let the browser redirect.
+      return new Promise<never>(() => {});
+    },
+    [],
+  );
+
+
 
   const refreshCurrentUser = useCallback(async () => {
     if (!session?.accessToken) {
@@ -69,12 +99,13 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       isAuthenticated: Boolean(session?.accessToken && meQuery.data),
       isBootstrapping: Boolean(session?.accessToken) && meQuery.isPending,
       login,
+      loginWithGoogle,
       logout: clearSession,
       refreshCurrentUser,
       session,
       user: meQuery.data ?? null,
     }),
-    [clearSession, login, meQuery.data, meQuery.error, meQuery.isPending, refreshCurrentUser, session],
+    [clearSession, login, loginWithGoogle, meQuery.data, meQuery.error, meQuery.isPending, refreshCurrentUser, session],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { AdminUserRole } from '@/api/types';
-import { apiClient } from '@/api/client';
+import { useRegisterAdminUserMutation } from '@/api/queries';
 
 export const AdminRegisterPage = () => {
   const [email, setEmail] = useState('');
@@ -20,6 +20,7 @@ export const AdminRegisterPage = () => {
   const { accessToken } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const registerMutation = useRegisterAdminUserMutation(accessToken);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,11 +31,12 @@ export const AdminRegisterPage = () => {
     }
 
     try {
-      await apiClient.post(
-        '/auth/register',
-        { email, password, full_name: fullName, role },
-        { authToken: accessToken }
-      );
+      await registerMutation.mutateAsync({
+        email,
+        password,
+        full_name: fullName,
+        role,
+      });
       toast({ title: 'Staff registered successfully' });
       navigate('/admin/users');
     } catch (error) {

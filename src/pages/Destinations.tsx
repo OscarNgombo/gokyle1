@@ -56,7 +56,7 @@ const Destinations = () => {
       mountains: 'Montagne e trekking',
       filterTagline: 'Filtra il viaggio',
       filterTitle: 'Inizia dal Kenya e poi affina per stile',
-      filterSubtitle: 'Per impostazione predefinita mostriamo prima le destinazioni del Kenya. Usa i filtri per cambiare paese e stile di viaggio.',
+      filterSubtitle: 'Per impostazione predefinita mostiamo prima le destinazioni del Kenya. Usa i filtri per cambiare paese e stile di viaggio.',
       matchingDestinations: 'destinazioni trovate',
       noResultsTitle: 'Nessuna destinazione corrisponde a questi filtri',
       noResultsDescription: 'Prova un altro stile o cambia il paese per vedere piu opzioni.',
@@ -93,7 +93,7 @@ const Destinations = () => {
     () =>
       allDestinations.filter((dest) => {
         const matchesCountry = activeCountry === 'all' || dest.country === activeCountry;
-        const matchesExperience = activeExperience === 'all' || dest.experienceKeys.includes(activeExperience);
+        const matchesExperience = activeExperience === 'all' || dest.experienceKeys?.includes(activeExperience);
         return matchesCountry && matchesExperience;
       }),
     [activeCountry, activeExperience, allDestinations],
@@ -136,30 +136,30 @@ const Destinations = () => {
       label: destinationCopy.all,
       count: activeExperience === 'all'
         ? allDestinations.length
-        : allDestinations.filter((d) => d.experienceKeys.includes(activeExperience)).length,
+        : allDestinations.filter((d) => d.experienceKeys?.includes(activeExperience)).length,
     },
     {
       value: 'kenya',
       label: t('nav.kenya'),
       count: activeExperience === 'all'
         ? allDestinations.filter((d) => d.country === 'kenya').length
-        : allDestinations.filter((d) => d.country === 'kenya' && d.experienceKeys.includes(activeExperience)).length,
+        : allDestinations.filter((d) => d.country === 'kenya' && d.experienceKeys?.includes(activeExperience)).length,
     },
     {
       value: 'tanzania',
       label: t('nav.tanzania'),
       count: activeExperience === 'all'
         ? allDestinations.filter((d) => d.country === 'tanzania').length
-        : allDestinations.filter((d) => d.country === 'tanzania' && d.experienceKeys.includes(activeExperience)).length,
+        : allDestinations.filter((d) => d.country === 'tanzania' && d.experienceKeys?.includes(activeExperience)).length,
     },
   ], [allDestinations, activeExperience, destinationCopy, t]);
 
   const experienceOptions = useMemo(() => [
     { value: 'all',       label: destinationCopy.allStyles, count: baseForExperienceCounts.length },
-    { value: 'wildlife',  label: destinationCopy.wildlife,  count: baseForExperienceCounts.filter((d) => d.experienceKeys.includes('wildlife')).length  },
-    { value: 'coast',     label: destinationCopy.coast,     count: baseForExperienceCounts.filter((d) => d.experienceKeys.includes('coast')).length     },
-    { value: 'culture',   label: destinationCopy.culture,   count: baseForExperienceCounts.filter((d) => d.experienceKeys.includes('culture')).length   },
-    { value: 'mountains', label: destinationCopy.mountains, count: baseForExperienceCounts.filter((d) => d.experienceKeys.includes('mountains')).length },
+    { value: 'wildlife',  label: destinationCopy.wildlife,  count: baseForExperienceCounts.filter((d) => d.experienceKeys?.includes('wildlife')).length  },
+    { value: 'coast',     label: destinationCopy.coast,     count: baseForExperienceCounts.filter((d) => d.experienceKeys?.includes('coast')).length     },
+    { value: 'culture',   label: destinationCopy.culture,   count: baseForExperienceCounts.filter((d) => d.experienceKeys?.includes('culture')).length   },
+    { value: 'mountains', label: destinationCopy.mountains, count: baseForExperienceCounts.filter((d) => d.experienceKeys?.includes('mountains')).length },
   ], [baseForExperienceCounts, destinationCopy]);
 
   const { heroImage, heroTitle, heroSubtitle } = useMemo(() => ({

@@ -9,6 +9,7 @@ export interface AuthContextValue {
   isAuthenticated: boolean;
   isBootstrapping: boolean;
   login: (input: AdminLoginInput) => Promise<AdminLoginResponse>;
+  loginWithGoogle: () => Promise<AdminLoginResponse>;
   logout: () => void;
   refreshCurrentUser: () => Promise<AdminUser | undefined>;
   session: StoredAdminAuthSession | null;
@@ -16,3 +17,4 @@ export interface AuthContextValue {
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+

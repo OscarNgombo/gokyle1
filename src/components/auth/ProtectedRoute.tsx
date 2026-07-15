@@ -4,8 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getApiErrorMessage } from '@/api/errors';
 import { useAuth } from '@/hooks/use-auth';
+import type { AdminUserRole } from '@/api/types';
 
-const ProtectedRoute = () => {
+
+interface ProtectedRouteProps {
+  allowedRoles?: AdminUserRole[];
+}
+
+export const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
   const auth = useAuth();
   const location = useLocation();
 
@@ -48,6 +54,30 @@ const ProtectedRoute = () => {
 
   if (!auth.isAuthenticated) {
     return <Navigate to="/staff/login" replace state={{ from: location }} />;
+  }
+
+  // Check roles if specified
+  if (allowedRoles && auth.user && !allowedRoles.includes(auth.user.role as AdminUserRole)) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted/30 px-6">
+        <Card className="w-full max-w-md border-destructive/20 shadow-lg">
+          <CardHeader className="text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive mb-4">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <CardTitle className="text-xl">Access Denied</CardTitle>
+            <CardDescription className="mt-2">
+              You do not have the required permissions to view this section.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Button asChild>
+              <Link to="/admin">Go to Dashboard</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return <Outlet />;

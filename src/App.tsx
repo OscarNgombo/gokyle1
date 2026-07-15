@@ -84,14 +84,27 @@ const AppRoutes = () => {
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboardPage />} />
-            <Route path="operations" element={<AdminOperationsLayout />}>
-              <Route index element={<Navigate to="bookings" replace />} />
-              <Route path="bookings" element={<AdminBookingsPage />} />
-              <Route path="inquiries" element={<AdminInquiriesPage />} />
+            
+            {/* Operations Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['super_admin', 'operations_manager', 'operations_agent']} />}>
+              <Route path="operations" element={<AdminOperationsLayout />}>
+                <Route index element={<Navigate to="bookings" replace />} />
+                <Route path="bookings" element={<AdminBookingsPage />} />
+                <Route path="inquiries" element={<AdminInquiriesPage />} />
+              </Route>
             </Route>
-            <Route path="content" element={<AdminContentPage />} />
-            <Route path="register" element={<AdminRegisterPage />} />
-            <Route path="users" element={<AdminUserManagementPage />} />
+
+            {/* Content Manager Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['super_admin', 'content_manager']} />}>
+              <Route path="content" element={<AdminContentPage />} />
+            </Route>
+
+            {/* Super Admin-only Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['super_admin']} />}>
+              <Route path="register" element={<AdminRegisterPage />} />
+              <Route path="users" element={<AdminUserManagementPage />} />
+            </Route>
+
             <Route path="*" element={<NotFound />} />
           </Route>
         </Route>

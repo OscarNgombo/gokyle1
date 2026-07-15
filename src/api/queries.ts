@@ -39,6 +39,11 @@ import {
   updateAdminDestination,
   updateAdminSafariPackage,
   updateAdminContactInquiry,
+  listAdminUsers,
+  updateAdminUserRole,
+  registerAdminUser,
+  updateAdminUserStatus,
+  deleteAdminUser,
 } from '@/api/services';
 import type {
   AdminLoginInput,
@@ -805,3 +810,81 @@ export const useAdminContactInquiryUpdateMutation = (
     ...(accessToken ? adminContactInquiryUpdateMutationOptions(accessToken) : adminContactInquiryUpdateMutationOptions('')),
     ...options,
   });
+
+export const adminUsersQueryKeys = {
+  all: ['admin-users'] as const,
+  list: (accessToken: string | null | undefined) => [...adminUsersQueryKeys.all, 'list', accessToken ?? 'anonymous'] as const,
+};
+
+export const adminUsersQueryOptions = (accessToken: string) =>
+  queryOptions({
+    queryKey: adminUsersQueryKeys.list(accessToken),
+    queryFn: () => listAdminUsers(accessToken),
+  });
+
+export const useAdminUsersQuery = (
+  accessToken: string | null | undefined,
+  options?: Omit<
+    UseQueryOptions<AdminUser[], Error, AdminUser[], ReturnType<typeof adminUsersQueryKeys.list>>,
+    'queryKey' | 'queryFn' | 'enabled'
+  >,
+) =>
+  useQuery({
+    ...(accessToken ? adminUsersQueryOptions(accessToken) : adminUsersQueryOptions('')),
+    enabled: Boolean(accessToken),
+    ...options,
+  });
+
+export const useUpdateAdminUserRoleMutation = (
+  accessToken: string | null | undefined,
+  options?: Omit<
+    UseMutationOptions<AdminUser, Error, { userId: string; role: string }>,
+    'mutationKey' | 'mutationFn'
+  >,
+) =>
+  useMutation({
+    mutationKey: [...adminUsersQueryKeys.all, 'update-role', accessToken] as const,
+    mutationFn: ({ userId, role }) => updateAdminUserRole(accessToken ?? '', userId, role),
+    ...options,
+  });
+
+export const useRegisterAdminUserMutation = (
+  accessToken: string | null | undefined,
+  options?: Omit<
+    UseMutationOptions<AdminUser, Error, any>,
+    'mutationKey' | 'mutationFn'
+  >,
+) =>
+  useMutation({
+    mutationKey: [...adminUsersQueryKeys.all, 'register', accessToken] as const,
+    mutationFn: (input) => registerAdminUser(accessToken ?? '', input),
+    ...options,
+  });
+
+export const useUpdateAdminUserStatusMutation = (
+  accessToken: string | null | undefined,
+  options?: Omit<
+    UseMutationOptions<AdminUser, Error, { userId: string; isActive: boolean }>,
+    'mutationKey' | 'mutationFn'
+  >,
+) =>
+  useMutation({
+    mutationKey: [...adminUsersQueryKeys.all, 'update-status', accessToken] as const,
+    mutationFn: ({ userId, isActive }) => updateAdminUserStatus(accessToken ?? '', userId, isActive),
+    ...options,
+  });
+
+export const useDeleteAdminUserMutation = (
+  accessToken: string | null | undefined,
+  options?: Omit<
+    UseMutationOptions<void, Error, string>,
+    'mutationKey' | 'mutationFn'
+  >,
+) =>
+  useMutation({
+    mutationKey: [...adminUsersQueryKeys.all, 'delete', accessToken] as const,
+    mutationFn: (userId) => deleteAdminUser(accessToken ?? '', userId),
+    ...options,
+  });
+
+
